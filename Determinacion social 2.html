@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matriz de Determinación Social | Epidemiología Crítica & HiMupAC</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Exportar PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Chart.js para Gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- ESTÉTICA LIQUID GLASS --- */
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --text-main: #f1f5f9;
+            --accent-cyan: #22d3ee;
+            --accent-pink: #f472b6;
+            --critical: #d946ef; /* Fucsia para Malsano */
+            --protective: #22c55e; /* Verde para Protector */
+            --himupac: #f59e0b; /* Ambar para HiMupAC */
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Orbes de fondo */
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: -1;
+            opacity: 0.6;
+            animation: float 20s infinite ease-in-out;
+        }
+        .orb-1 { width: 400px; height: 400px; background: #4f46e5; top: -100px; left: -100px; }
+        .orb-2 { width: 500px; height: 500px; background: #be185d; bottom: -150px; right: -50px; animation-delay: -5s; }
+        .orb-3 { width: 300px; height: 300px; background: #f59e0b; bottom: 40%; left: 40%; animation-delay: -10s; opacity: 0.3; }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(20px, -20px) scale(1.1); }
+        }
+
+        /* Glassmorphism */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        .glass-input {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--glass-border);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .glass-input:focus {
+            background: rgba(0, 0, 0, 0.5);
+            border-color: var(--accent-cyan);
+            outline: none;
+        }
+
+        /* Navegación */
+        .nav-btn.active {
+            background: rgba(255,255,255,0.1);
+            color: var(--accent-cyan);
+            border-bottom: 2px solid var(--accent-cyan);
+        }
+
+        /* Items de lista dinámicos */
+        .process-item {
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            margin-bottom: 0.3rem;
+            animation: slideIn 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        /* Estilos específicos para Malsano vs Protector */
+        .item-destructive { background: rgba(217, 70, 239, 0.2); border-left: 3px solid var(--critical); }
+        .item-protective { background: rgba(34, 197, 94, 0.2); border-left: 3px solid var(--protective); }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+        
+        .delete-btn { color: white; cursor: pointer; padding: 0 6px; opacity: 0.7; }
+        .delete-btn:hover { opacity: 1; }
+
+        /* TABLA DE SÍNTESIS */
+        .synthesis-table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 1rem; }
+        .synthesis-table th, .synthesis-table td { 
+            padding: 12px; 
+            border: 1px solid rgba(255,255,255,0.1); 
+            vertical-align: top; 
+            background: rgba(0,0,0,0.2);
+        }
+        .synthesis-table th { background: rgba(255,255,255,0.05); text-transform: uppercase; font-size: 0.75rem; color: var(--accent-cyan); letter-spacing: 1px; }
+        .synthesis-table .row-header { background: rgba(255,255,255,0.05); font-weight: bold; width: 15%; text-align: right; font-size: 0.8rem; color: #f472b6; }
+        
+        .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; margin: 2px; color: white; font-weight: 600; }
+        .tag-crit { background: var(--critical); box-shadow: 0 0 5px var(--critical); }
+        .tag-prot { background: var(--protective); box-shadow: 0 0 5px var(--protective); }
+
+        /* Tablas Comparativas (Instrucciones) */
+        .comparison-table td { padding: 12px; vertical-align: top; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .comparison-table th { text-align: left; padding: 12px; color: var(--accent-cyan); border-bottom: 2px solid rgba(255,255,255,0.1); }
+
+        /* HiMupAC Styles */
+        .selectable-item {
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        .selectable-item:hover {
+            background-color: rgba(217, 70, 239, 0.3);
+        }
+        .selectable-item.selected {
+            background-color: rgba(217, 70, 239, 0.5);
+            border-color: #f0abfc;
+            box-shadow: 0 0 10px rgba(217, 70, 239, 0.3);
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Orbes -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <div class="max-w-[95%] mx-auto py-6 min-h-screen flex flex-col">
+        
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-6 glass-panel rounded-2xl p-6">
+            <div>
+                <h1 class="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-pink-500">
+                    Epidemiología Crítica
+                </h1>
+                <p class="text-sm text-gray-300">Instrumento de Determinación Social & HiMupAC</p>
+            </div>
+            <div class="text-right hidden sm:block">
+                <p class="font-semibold text-white">Modelo Dialéctico</p>
+                <p class="text-xs text-gray-400">Jaime Breilh</p>
+            </div>
+        </header>
+
+        <!-- Navegación -->
+        <nav class="glass-panel rounded-xl p-2 mb-6 flex overflow-x-auto gap-2 justify-center">
+            <button onclick="switchTab('instrucciones')" id="btn-instrucciones" class="nav-btn active px-6 py-2 rounded-lg text-sm font-semibold whitespace-nowrap text-gray-300 hover:text-white transition">
+                1. Conceptos
+            </button>
+            <button onclick="switchTab('diligenciar')" id="btn-diligenciar" class="nav-btn px-6 py-2 rounded-lg text-sm font-semibold whitespace-nowrap text-gray-300 hover:text-white transition">
+                2. Matriz Dialéctica
+            </button>
+            <button onclick="switchTab('visualizar')" id="btn-visualizar" class="nav-btn px-6 py-2 rounded-lg text-sm font-semibold whitespace-nowrap text-gray-300 hover:text-white transition">
+                3. Síntesis (Tabla)
+            </button>
+            <button onclick="switchTab('recomendaciones')" id="btn-recomendaciones" class="nav-btn px-6 py-2 rounded-lg text-sm font-semibold whitespace-nowrap text-gray-300 hover:text-white transition">
+                4. Praxis (Prevención)
+            </button>
+            <button onclick="switchTab('himupac')" id="btn-himupac" class="nav-btn px-6 py-2 rounded-lg text-sm font-semibold whitespace-nowrap text-amber-400 hover:text-white transition border border-amber-500/30 bg-amber-900/10">
+                5. Método HiMupAC
+            </button>
+        </nav>
+
+        <!-- CONTENIDO -->
+        <main class="flex-grow">
+
+            <!-- 1. INSTRUCCIONES (Pedagogía Profunda) -->
+            <section id="instrucciones" class="tab-content block animate-fade-in">
+                
+                <!-- Intro -->
+                <div class="glass-panel p-8 rounded-2xl mb-8 border-l-4 border-pink-500">
+                    <h2 class="text-2xl font-bold text-white mb-4">Más allá de la Causalidad Lineal</h2>
+                    <p class="text-gray-300 leading-relaxed mb-4">
+                        La epidemiología convencional suele ver la salud como una suma de "factores de riesgo" (causalidad lineal: A causa B). 
+                        Esta herramienta te invita a pensar desde la <strong>Determinación Social</strong>. No buscamos culpables individuales, 
+                        buscamos la lógica histórica que hace posible que la enfermedad (o la salud) florezca en un territorio.
+                    </p>
+                </div>
+
+                <!-- Comparativa -->
+                <div class="grid md:grid-cols-2 gap-6 mb-8">
+                    <!-- Paradigma Viejo -->
+                    <div class="glass-panel p-6 rounded-xl opacity-80">
+                        <h3 class="text-lg font-bold text-gray-400 mb-3 border-b border-gray-600 pb-2">❌ Causalidad Lineal (Convencional)</h3>
+                        <ul class="space-y-3 text-sm text-gray-400">
+                            <li>• Fragmenta la realidad en variables sueltas ("riesgos").</li>
+                            <li>• Se centra en el individuo descontextualizado.</li>
+                            <li>• <strong>Método:</strong> Asociación Estadística (Correlación).</li>
+                            <li>• <em>Ejemplo:</em> "Fumar causa cáncer". Ignora por qué fuma la gente.</li>
+                        </ul>
+                    </div>
+
+                    <!-- Paradigma Nuevo -->
+                    <div class="glass-panel p-6 rounded-xl border border-cyan-500/30 bg-cyan-900/10">
+                        <h3 class="text-lg font-bold text-cyan-400 mb-3 border-b border-cyan-500/30 pb-2">✅ Determinación (Crítica)</h3>
+                        <ul class="space-y-3 text-sm text-gray-200">
+                            <li>• Ve la realidad como un sistema complejo de procesos.</li>
+                            <li>• Conecta lo estructural (General) con lo corporal (Individual).</li>
+                            <li>• <strong>Método:</strong> Meta-inferencia.</li>
+                            <li>• <em>Ejemplo:</em> El modelo económico promueve el consumo (G), el grupo adopta el hábito (P), el individuo enferma (I).</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Meta-inferencia -->
+                <div class="glass-panel p-8 rounded-2xl mb-8 bg-gradient-to-r from-blue-900/40 to-purple-900/40 border border-white/10">
+                    <div class="flex flex-col md:flex-row gap-6 items-center">
+                        <div class="text-5xl">🧠</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white mb-2">¿Qué es la Meta-inferencia?</h3>
+                            <p class="text-sm text-gray-300 leading-relaxed">
+                                Es el "salto mental" que debemos hacer: observar el <strong>dato empírico</strong> (lo visible) e inferir la <strong>lógica histórica</strong> (lo invisible) que lo genera. 
+                                <span class="text-cyan-300 font-semibold block mt-1">"Interpretar la parte a través del todo, y entender el todo a través de la parte."</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Instrucciones de Interfaz -->
+                <div class="glass-panel p-8 rounded-2xl mb-8 border border-white/20">
+                    <h3 class="text-xl font-bold text-white mb-4 border-b border-white/10 pb-2">Cómo usar esta Interfaz Dialéctica</h3>
+                    <p class="text-sm text-gray-400 mb-4">Para cada dimensión de análisis, usted encontrará dos botones:</p>
+                    
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="p-4 bg-fuchsia-900/30 rounded-lg border border-fuchsia-500/50 flex items-start gap-3">
+                            <span class="text-2xl">🔴</span>
+                            <div>
+                                <h4 class="text-fuchsia-400 font-bold text-sm uppercase">Botón Fucsia: Malsano</h4>
+                                <p class="text-xs text-gray-300 mt-1">Procesos que deterioran la vida, generan despojo o sufrimiento.</p>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-green-900/30 rounded-lg border border-green-500/50 flex items-start gap-3">
+                            <span class="text-2xl">🟢</span>
+                            <div>
+                                <h4 class="text-green-400 font-bold text-sm uppercase">Botón Verde: Protector</h4>
+                                <p class="text-xs text-gray-300 mt-1">Procesos que defienden la vida, generan soberanía y salud.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Guía de Niveles -->
+                <div class="glass-panel p-6 rounded-2xl">
+                    <h3 class="text-lg font-bold text-white mb-4">Guía para el Diligenciamiento</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm comparison-table">
+                            <thead>
+                                <tr>
+                                    <th width="30%">Dimensión</th>
+                                    <th>Pregunta Orientadora</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong class="text-pink-400">GENERAL (G)</strong><br><span class="text-xs text-gray-500">Lógica Estructural</span></td>
+                                    <td class="text-gray-300">¿Qué políticas nacionales, modelos económicos o imposiciones culturales determinan las reglas del juego?</td>
+                                </tr>
+                                <tr>
+                                    <td><strong class="text-cyan-400">PARTICULAR (P)</strong><br><span class="text-xs text-gray-500">Modos de Vida</span></td>
+                                    <td class="text-gray-300">¿Cómo vive, trabaja y se organiza el grupo social? ¿Cuáles son sus patrones de exposición?</td>
+                                </tr>
+                                <tr>
+                                    <td><strong class="text-lime-400">INDIVIDUAL (I)</strong><br><span class="text-xs text-gray-500">Estilos y Fenotipo</span></td>
+                                    <td class="text-gray-300">¿Cómo se encarnan (se hacen cuerpo) estos procesos en la biología y la psiquis?</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="mt-8 text-center">
+                        <button onclick="switchTab('diligenciar')" class="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white px-8 py-3 rounded-full font-bold shadow-lg transition transform hover:scale-105">
+                            Comenzar el Análisis Dialéctico ➔
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. DILIGENCIAR (MATRIZ DIALÉCTICA) -->
+            <section id="diligenciar" class="tab-content hidden">
+                <div class="flex flex-wrap justify-between items-center mb-4 gap-4">
+                    <h2 class="text-xl font-bold text-white">Laboratorio de Análisis Territorial</h2>
+                    <input type="text" id="territory-input" placeholder="Nombre del Territorio..." class="glass-input px-3 py-1 rounded text-sm w-64 border-cyan-500/50">
+                </div>
+                
+                <p class="text-xs text-gray-400 mb-6 bg-black/20 p-2 rounded inline-block">
+                    📝 Para cada dimensión, use los botones: <strong class="text-fuchsia-400">Fucsia (Malsano)</strong> o <strong class="text-green-400">Verde (Protector)</strong>.
+                </p>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-20">
+                    
+                    <!-- NODO 1: SUSTENTABILIDAD -->
+                    <div class="glass-panel p-5 rounded-xl border-l-4 border-emerald-500 relative">
+                        <h3 class="text-lg font-bold text-emerald-300 mb-4 flex items-center gap-2 border-b border-white/10 pb-2">
+                            <span class="text-2xl">🌱</span> 1. Sustentabilidad
+                        </h3>
+                        
+                        <div class="mb-5">
+                            <label class="text-xs text-pink-300 font-bold uppercase block mb-1">G - General</label>
+                            <div id="list-sus-g" class="space-y-1 mb-2"></div>
+                            <textarea id="input-sus-g" class="glass-input w-full p-2 rounded text-xs h-12 mb-1 resize-none" placeholder="Ej: Lógica de acumulación que depreda la naturaleza (minería/agroindustria), políticas de flexibilidad ambiental, mercantilización del agua..."></textarea>
+                            <div class="flex gap-2 justify-end">
+                                <button onclick="addProcess('sus-g', 'destructive')" class="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-3 py-1 rounded text-xs font-bold">Agregar Malsano ▼</button>
+                                <button onclick="addProcess('sus-g', 'protective')" class="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded text-xs font-bold">Agregar Protector ▲</button>
+                            </div>
+                        </div>
+                        <div class="mb-5">
+                            <label class="text-xs text-cyan-300 font-bold uppercase block mb-1">P - Particular</label>
+                            <div id="list-sus-p" class="space-y-1 mb-2"></div>
+                            <textarea id="input-sus-p" class="glass-input w-full p-2 rounded text-xs h-12 mb-1 resize-none" placeholder="Ej: Exposición grupal a contaminantes (barrio industrial), falta de agua potable colectiva, pérdida de soberanía alimentaria local..."></textarea>
+                            <div class="flex gap-2 justify-end">
+                                <button onclick="addProcess('sus-p', 'destructive')" class="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-3 py-1 rounded text-xs font-bold">Agregar Malsano ▼</button>
+                                <button onclick="addProcess('sus-p', 'protective')" class="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded text-xs font-bold">Agregar Protector ▲</button>
+                            </div>
+                        </div>
+                        <div class="mb-5">
+                            <label class="text-xs text-lime-300 font-bold uppercase block mb-1">I - Individual</label>
+                            <div id="list-sus-i" class="space-y-1 mb-2"></div>
+                            <textarea id="input-sus-i" class="glass-input w-full p-2 rounded text-xs h-12 mb-1 resize-none" placeholder="Ej: Carga corporal de metales pesados, disrupción endocrina, sufrimiento por falta de entorno saludable..."></textarea>
+                            <div class="flex gap-2 justify-end">
+                                <button onclick="addProcess('sus-i', 'destructive')" class="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-3 py-1 rounded text-xs font-bold">Agregar Malsano ▼</button>
+                                <button onclick="addProcess('sus-i', 'protective')" class="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded text-xs font-bold">Agregar Protector ▲</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- NODO 2: SOBERANÍA -->
+                    <div class="glass-panel p-5 rounded-xl border-l-4 border-purple-500 relative">
+                        <h3 class="text-lg font-bold text-purple-300 mb-4 flex items-center gap-2 border-b border-white/10 pb-2">
+                            <span class="text-2xl">✊</span> 2. Soberanía
+                        </h3>
+                        <div class="mb-5">
+                            <label class="text-xs text-pink-300 font-bold uppercase block mb-1">G - General</label>
+                            <div id="list-sob-g" class="space-y-1 mb-2"></div>
+                            <textarea id="input-sob-g" class="glass-input w-full p-2 rounded text-xs h-12 mb-1 resize-none" placeholder="Ej: Pérdida de soberanía nacional ante deuda externa, políticas impositivas regresivas, monopolios mediáticos..."></textarea>
+                            <div class="flex gap-2 justify-end">
+                                <button onclick="addProcess('sob-g', 'destructive')" class="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-3 py-1 rounded text-xs font-bold">Agregar Malsano ▼</button>
+                                <button onclick="addProcess('sob-g', 'protective')" class="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded text-xs font-bold">Agregar Protector ▲</button>
+                            </div>
+                        </div>
+                        <div class="mb-5">
+                            <label class="text-xs text-cyan-300 font-bold uppercase block mb-1">P - Particular</label>
+                            <div id="list-sob-p" class="space-y-1 mb-2"></div>
+                            <textarea id="input-sob-p" class="glass-input w-full p-2 rounded text-xs h-12 mb-1 resize-none" placeholder="Ej: Debilitamiento de organizaciones gremiales, falta de consulta previa en territorios, capacidad de autogestión comunitaria..."></textarea>
+                            <div class="flex gap-2 justify-end">
+                                <button onclick="addProcess('sob-p', 'destructive')" class="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-3 py-1 rounded text-xs font-bold">Agregar Malsano ▼</button>
+                                <button onclick="addProcess('sob-p', 'protective')" class="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded text-xs font-bold">Agregar Protector ▲</button>
+                            </div>
+                        </div>
+                        <div class="mb-5">
+                            <label class="text-xs text-lime-300 font-bold uppercase block mb-1">I - Individual</label>
+                            <div id="list-sob-i" class="space-y-1 mb-2"></div>
+                            <textarea id="input-sob-i" class="glass-input w-full p-2 rounded text-xs h-12 mb-1 resize-none" placeholder="Ej: Pérdida de autonomía sobre el propio trabajo, desconocimiento de derechos, capacidad de resistencia individual..."></textarea>
+                            <div class="flex gap-2 justify-end">
+                                <button onclick="addProcess('sob-i', 'destructive')" class="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-3 py-1 rounded text-xs font-bold">Agregar Malsano ▼</button>
+                                <button onclick="addProcess('sob-i', 'protective')" class="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded text-xs font-bold">Agregar Protector ▲</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- NODO 3: SOLIDARIDAD -->
+                    <div class="glass-panel p-5 rounded-xl border-l-4 border-yellow-500 relative">
+                        <h3 class="text-lg font-bold text-yellow-300 mb-4 flex items-center gap-2 border-b border-white/10 pb-2">
+                            <span class="text-2xl">🤝</span> 3. Solidaridad
+                        </h3>
+                        <div class="mb-5">
+                            <label class="text-xs text-pink-300 font-bold uppercase block mb-1">G - General</label>
+                            <div id="list-sol-g" class="space-y-1 mb-2"></div>
+                            <textarea id="input-sol-g" class="glass-input w-full p-2 rounded text-xs h-12 mb-1 resize-none" placeholder="Ej: Cultura hegemónica del consumismo, erosión de derechos colectivos, injusticia estructural (clase/etnia/género)..."></textarea>
+                            <div class="flex gap-2 justify-end">
+                                <button onclick="addProcess('sol-g', 'destructive')" class="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-3 py-1 rounded text-xs font-bold">Agregar Malsano ▼</button>
+                                <button onclick="addProcess('sol-g', 'protective')" class="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded text-xs font-bold">Agregar Protector ▲</button>
+                            </div>
+                        </div>
+                        <div class="mb-5">
+                            <label class="text-xs text-cyan-300 font-bold uppercase block mb-1">P - Particular</label>
+                            <div id="list-sol-p" class="space-y-1 mb-2"></div>
+                            <textarea id="input-sol-p" class="glass-input w-full p-2 rounded text-xs h-12 mb-1 resize-none" placeholder="Ej: Ruptura del tejido social barrial, violencia doméstica normalizada, redes de cuidado solidario (ollas comunes)..."></textarea>
+                            <div class="flex gap-2 justify-end">
+                                <button onclick="addProcess('sol-p', 'destructive')" class="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-3 py-1 rounded text-xs font-bold">Agregar Malsano ▼</button>
+                                <button onclick="addProcess('sol-p', 'protective')" class="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded text-xs font-bold">Agregar Protector ▲</button>
+                            </div>
+                        </div>
+                        <div class="mb-5">
+                            <label class="text-xs text-lime-300 font-bold uppercase block mb-1">I - Individual</label>
+                            <div id="list-sol-i" class="space-y-1 mb-2"></div>
+                            <textarea id="input-sol-i" class="glass-input w-full p-2 rounded text-xs h-12 mb-1 resize-none" placeholder="Ej: Alienación, soledad profunda, angustia existencial, trastornos de salud mental por exclusión..."></textarea>
+                            <div class="flex gap-2 justify-end">
+                                <button onclick="addProcess('sol-i', 'destructive')" class="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-3 py-1 rounded text-xs font-bold">Agregar Malsano ▼</button>
+                                <button onclick="addProcess('sol-i', 'protective')" class="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded text-xs font-bold">Agregar Protector ▲</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- NODO 4: SEGURIDAD -->
+                    <div class="glass-panel p-5 rounded-xl border-l-4 border-blue-500 relative">
+                        <h3 class="text-lg font-bold text-blue-300 mb-4 flex items-center gap-2 border-b border-white/10 pb-2">
+                            <span class="text-2xl">🛡️</span> 4. Seguridad
+                        </h3>
+                        <div class="mb-5">
+                            <label class="text-xs text-pink-300 font-bold uppercase block mb-1">G - General</label>
+                            <div id="list-seg-g" class="space-y-1 mb-2"></div>
+                            <textarea id="input-seg-g" class="glass-input w-full p-2 rounded text-xs h-12 mb-1 resize-none" placeholder="Ej: Privatización de la salud y pensiones, violencia estructural del estado, impunidad sistémica..."></textarea>
+                            <div class="flex gap-2 justify-end">
+                                <button onclick="addProcess('seg-g', 'destructive')" class="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-3 py-1 rounded text-xs font-bold">Agregar Malsano ▼</button>
+                                <button onclick="addProcess('seg-g', 'protective')" class="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded text-xs font-bold">Agregar Protector ▲</button>
+                            </div>
+                        </div>
+                        <div class="mb-5">
+                            <label class="text-xs text-cyan-300 font-bold uppercase block mb-1">P - Particular</label>
+                            <div id="list-seg-p" class="space-y-1 mb-2"></div>
+                            <textarea id="input-seg-p" class="glass-input w-full p-2 rounded text-xs h-12 mb-1 resize-none" placeholder="Ej: Vulnerabilidad ante desastres naturales, precarización de la seguridad laboral, zonas de sacrificio ambiental..."></textarea>
+                            <div class="flex gap-2 justify-end">
+                                <button onclick="addProcess('seg-p', 'destructive')" class="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-3 py-1 rounded text-xs font-bold">Agregar Malsano ▼</button>
+                                <button onclick="addProcess('seg-p', 'protective')" class="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded text-xs font-bold">Agregar Protector ▲</button>
+                            </div>
+                        </div>
+                        <div class="mb-5">
+                            <label class="text-xs text-lime-300 font-bold uppercase block mb-1">I - Individual</label>
+                            <div id="list-seg-i" class="space-y-1 mb-2"></div>
+                            <textarea id="input-seg-i" class="glass-input w-full p-2 rounded text-xs h-12 mb-1 resize-none" placeholder="Ej: Desnutrición crónica, inmunodepresión, trauma físico/psicológico por violencia, acceso a terapias..."></textarea>
+                            <div class="flex gap-2 justify-end">
+                                <button onclick="addProcess('seg-i', 'destructive')" class="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-3 py-1 rounded text-xs font-bold">Agregar Malsano ▼</button>
+                                <button onclick="addProcess('seg-i', 'protective')" class="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded text-xs font-bold">Agregar Protector ▲</button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Botón Generar -->
+                <div class="fixed bottom-6 right-6 z-50">
+                    <button onclick="renderTableSynthesis()" class="bg-gradient-to-r from-pink-600 to-purple-600 hover:scale-105 text-white font-bold py-3 px-8 rounded-full shadow-2xl transition transform flex items-center gap-2">
+                        <span>Generar Tabla Síntesis</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                    </button>
+                </div>
+            </section>
+
+            <!-- 3. VISUALIZAR (TABLA 3x4) -->
+            <section id="visualizar" class="tab-content hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-white">Matriz de Síntesis Dialéctica</h2>
+                    <button onclick="exportToPDF()" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded text-sm text-white border border-white/20">Descargar PDF</button>
+                </div>
+
+                <div id="print-area" class="bg-slate-900/90 p-8 rounded-2xl border border-white/10 w-full shadow-2xl overflow-x-auto">
+                    <!-- Cabecera Informe -->
+                    <div class="text-center mb-6 pb-4 border-b border-white/10">
+                        <h1 class="text-2xl font-bold text-cyan-400">Perfil de Determinación Social</h1>
+                        <p class="text-lg text-white mt-1" id="display-territory">Territorio: Sin definir</p>
+                        <div class="flex justify-center gap-4 mt-2 text-xs">
+                            <span class="flex items-center gap-1"><div class="w-3 h-3 bg-fuchsia-500 rounded-sm"></div> Procesos Críticos (Malsanos)</span>
+                            <span class="flex items-center gap-1"><div class="w-3 h-3 bg-green-500 rounded-sm"></div> Procesos Protectores</span>
+                        </div>
+                    </div>
+
+                    <!-- Tabla 3x4 Generada con JS -->
+                    <div id="table-container"></div>
+
+                    <!-- Radar Chart -->
+                    <div class="mt-8 pt-8 border-t border-white/10 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                        <div class="h-64">
+                            <canvas id="radarChart"></canvas>
+                        </div>
+                        <div class="text-sm text-gray-400">
+                            <h4 class="font-bold text-white mb-2">Interpretación del Perfil:</h4>
+                            <p>Esta tabla muestra la distribución de la carga de procesos en su territorio. Observe dónde se acumulan las etiquetas <span class="text-fuchsia-400">Fucsia</span> (destrucción) frente a las <span class="text-green-400">Verdes</span> (defensa). La estrategia debe apuntar a convertir lo crítico en protector a través de la organización social.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. PRAXIS (PREVENCIÓN/PROMOCIÓN) -->
+            <section id="recomendaciones" class="tab-content hidden">
+                <div class="max-w-[95%] mx-auto">
+                    <div id="praxis-print-area">
+                        <h2 class="text-2xl font-bold text-white mb-2">Matriz de Acción Crítica</h2>
+                        <p class="text-sm text-gray-300 mb-6">Plan de intervención basado en los tres niveles de la determinación.</p>
+
+                        <div class="glass-panel p-6 rounded-2xl mb-8">
+                            <!-- Header Row -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 text-center">
+                                <div class="hidden md:block"></div> 
+                                <div class="bg-fuchsia-900/40 p-2 rounded-lg border border-fuchsia-500/30 text-fuchsia-300 font-bold uppercase text-sm flex flex-col justify-center">
+                                    <span>🛡️ Prevención</span>
+                                </div>
+                                <div class="bg-green-900/40 p-2 rounded-lg border border-green-500/30 text-green-300 font-bold uppercase text-sm flex flex-col justify-center">
+                                    <span>🌱 Promoción</span>
+                                </div>
+                            </div>
+
+                            <!-- Row 1: General -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 items-stretch">
+                                <div class="glass-panel p-4 flex flex-col justify-center border-l-4 border-pink-500 bg-white/5">
+                                    <h4 class="font-bold text-pink-300 text-lg">GENERAL (Estratégico)</h4>
+                                    <p class="text-xs text-gray-400 mt-1">Transformación estructural.</p>
+                                </div>
+                                <textarea id="praxis-g-prev" class="glass-input w-full p-3 rounded text-sm resize-none" rows="5" placeholder="Acciones preventivas estratégicas..."></textarea>
+                                <textarea id="praxis-g-prom" class="glass-input w-full p-3 rounded text-sm resize-none" rows="5" placeholder="Acciones promotoras estratégicas..."></textarea>
+                            </div>
+
+                            <!-- Row 2: Particular -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 items-stretch">
+                                <div class="glass-panel p-4 flex flex-col justify-center border-l-4 border-cyan-500 bg-white/5">
+                                    <h4 class="font-bold text-cyan-300 text-lg">PARTICULAR (Táctico)</h4>
+                                    <p class="text-xs text-gray-400 mt-1">Organización y modos de vida.</p>
+                                </div>
+                                <textarea id="praxis-p-prev" class="glass-input w-full p-3 rounded text-sm resize-none" rows="5" placeholder="Acciones preventivas tácticas..."></textarea>
+                                <textarea id="praxis-p-prom" class="glass-input w-full p-3 rounded text-sm resize-none" rows="5" placeholder="Acciones promotoras tácticas..."></textarea>
+                            </div>
+
+                            <!-- Row 3: Individual -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 items-stretch">
+                                <div class="glass-panel p-4 flex flex-col justify-center border-l-4 border-lime-500 bg-white/5">
+                                    <h4 class="font-bold text-lime-300 text-lg">INDIVIDUAL (Puntual)</h4>
+                                    <p class="text-xs text-gray-400 mt-1">Cuidado y estilos de vida.</p>
+                                </div>
+                                <textarea id="praxis-i-prev" class="glass-input w-full p-3 rounded text-sm resize-none" rows="5" placeholder="Acciones preventivas puntuales..."></textarea>
+                                <textarea id="praxis-i-prom" class="glass-input w-full p-3 rounded text-sm resize-none" rows="5" placeholder="Acciones promotoras puntuales..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center pb-8">
+                         <button onclick="exportPraxisPDF()" class="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 px-8 py-3 rounded-full text-sm font-bold text-white shadow-lg transition transform hover:scale-105">🖨️ Descargar Plan de Acción</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. MÉTODO HIMUPAC (NUEVA PESTAÑA MEJORADA) -->
+            <section id="himupac" class="tab-content hidden">
+                <div class="max-w-[95%] mx-auto">
+                    <div id="himupac-print-area">
+                        <!-- Título y Descripción -->
+                        <div class="text-center mb-8">
+                            <h2 class="text-3xl font-extrabold text-amber-400 mb-2">Método HiMupAC</h2>
+                            <p class="text-sm text-gray-300 max-w-4xl mx-auto">Historias Musicales para el Aprendizaje Colectivo: Una propuesta metodológica de educación para la salud desde el paradigma crítico.</p>
+                            <a href="https://journals.sagepub.com/doi/10.1177/17579759251334393" target="_blank" class="text-xs text-amber-500 underline hover:text-amber-300 mt-2 block">Ver Artículo Completo (DOI)</a>
+                        </div>
+
+                        <!-- 1. Selección de Procesos Malsanos -->
+                        <div class="glass-panel p-6 rounded-2xl mb-8 border border-amber-500/30">
+                            <h3 class="text-xl font-bold text-amber-300 mb-4 flex items-center gap-2">
+                                <span class="bg-amber-500 text-black w-6 h-6 rounded-full flex items-center justify-center text-xs">1</span> 
+                                Selección de Procesos Críticos (Malsanos)
+                            </h3>
+                            <p class="text-xs text-gray-400 mb-4">Seleccione los procesos identificados en la matriz (Tab 2) que desea abordar en la historia musical. Esto definirá el conflicto central de la narrativa.</p>
+                            
+                            <div id="himupac-checklist" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-60 overflow-y-auto p-2 bg-black/20 rounded-lg">
+                                <p class="text-center text-gray-500 italic col-span-full">No hay procesos malsanos registrados. Vaya a la Matriz Dialéctica.</p>
+                            </div>
+                        </div>
+
+                        <!-- 2. Fundamentos Teóricos -->
+                        <div class="glass-panel p-6 rounded-2xl mb-8 border border-amber-500/30">
+                            <h3 class="text-xl font-bold text-amber-300 mb-4 flex items-center gap-2">
+                                <span class="bg-amber-500 text-black w-6 h-6 rounded-full flex items-center justify-center text-xs">2</span> 
+                                Fundamentos Metodológicos
+                            </h3>
+                            <div class="grid md:grid-cols-2 gap-6">
+                                <div class="bg-amber-900/20 p-4 rounded-lg border-l-4 border-amber-500">
+                                    <h4 class="font-bold text-amber-200 text-sm mb-2">Interculturalidad Crítica</h4>
+                                    <p class="text-xs text-gray-300 text-justify">No se trata solo de tolerar la diferencia, sino de construir desde ella. El método promueve un diálogo horizontal donde los saberes locales, ancestrales y populares tienen el mismo valor que el conocimiento académico.</p>
+                                </div>
+                                <div class="bg-amber-900/20 p-4 rounded-lg border-l-4 border-amber-500">
+                                    <h4 class="font-bold text-amber-200 text-sm mb-2">Reconocimiento de Saberes</h4>
+                                    <p class="text-xs text-gray-300 text-justify">Validar la voz de la comunidad. La historia y la música no se imponen desde afuera; emergen de las vivencias, lenguajes y estéticas propias del territorio para generar aprendizaje significativo.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3. Co-construcción -->
+                        <div class="glass-panel p-6 rounded-2xl mb-8 border border-amber-500/30">
+                            <h3 class="text-xl font-bold text-amber-300 mb-4 flex items-center gap-2">
+                                <span class="bg-amber-500 text-black w-6 h-6 rounded-full flex items-center justify-center text-xs">3</span> 
+                                Co-construcción de la Propuesta
+                            </h3>
+                            
+                            <!-- Paso A: Narrativa -->
+                            <div class="mb-6">
+                                <h4 class="text-sm font-bold text-white mb-2 uppercase tracking-widest border-b border-white/10 pb-1">A. Narrativa (La Historia)</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <textarea id="him-personajes" class="glass-input w-full p-3 rounded text-sm h-24 resize-none" placeholder="Personajes: ¿Quiénes protagonizan la historia? (Ej: Doña María, el río enfermo, el empresario...)"></textarea>
+                                    <textarea id="him-trama" class="glass-input w-full p-3 rounded text-sm h-24 resize-none" placeholder="Trama: ¿Cómo el proceso malsano seleccionado afecta la vida de los personajes? ¿Cuál es el nudo?"></textarea>
+                                </div>
+                            </div>
+
+                            <!-- Paso B: Sonoridad -->
+                            <div class="mb-6">
+                                <h4 class="text-sm font-bold text-white mb-2 uppercase tracking-widest border-b border-white/10 pb-1">B. Sonoridad (Música e Identidad)</h4>
+                                <p class="text-xs text-gray-400 mb-2">Seleccione ritmos y melodías que resuenen culturalmente con el territorio.</p>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <input id="him-ritmo" type="text" class="glass-input w-full p-3 rounded text-sm" placeholder="Ritmo Musical (Ej: Cumbia, Bambuco, Rap, Champeta...)">
+                                    <textarea id="him-instrumentos" class="glass-input w-full p-3 rounded text-sm h-24 resize-none" placeholder="Instrumentos y Sonoridades: ¿Qué instrumentos locales usaremos? ¿Sonidos ambientales?"></textarea>
+                                </div>
+                            </div>
+
+                            <!-- Paso C: Aprendizaje -->
+                            <div>
+                                <h4 class="text-sm font-bold text-white mb-2 uppercase tracking-widest border-b border-white/10 pb-1">C. Aprendizaje Colectivo</h4>
+                                <textarea id="him-mensaje" class="glass-input w-full p-3 rounded text-sm h-24 resize-none" placeholder="Mensaje Transformador: ¿Qué reflexión o acción queremos detonar en la comunidad con esta historia musical?"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Referencia del Artículo -->
+                        <div class="mt-8 p-4 border-t border-amber-500/20 text-center">
+                            <p class="text-xs text-gray-400 font-serif italic">
+                                Fuente Metodológica: <br>
+                                <span class="font-bold text-amber-200">Carlos D. Páez-Mora¹ y Kelly T. Cetina-Matallana² (2025).</span><br>
+                                "Historias musicales para el aprendizaje colectivo: una propuesta metodológica de educación para la salud desde el paradigma crítico".
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center pb-8 flex justify-center gap-4">
+                         <button onclick="exportHimupacPDF()" class="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 px-8 py-3 rounded-full text-sm font-bold text-white shadow-lg transition transform hover:scale-105">🖨️ Descargar Propuesta HiMupAC</button>
+                         <button class="bg-white/10 hover:bg-white/20 px-8 py-3 rounded-full text-sm font-bold text-white border border-white/20 transition transform hover:scale-105" title="Simulación de descarga">📥 Descargar Formato Guía (PDF)</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- FOOTER DE CRÉDITOS -->
+            <footer class="mt-12 py-8 border-t border-white/10 text-center text-sm text-gray-400 bg-black/20">
+                <div class="max-w-4xl mx-auto px-4">
+                    <p class="font-bold text-white mb-1">Diseño Conceptual y Pedagógico:</p>
+                    <p class="text-base text-cyan-300 font-semibold">Carlos Duvan Páez Mora</p>
+                    <p class="mb-1">Docente Maestría en Salud Pública</p>
+                    <p>Fundación Universitaria del Área Andina, Bogotá</p>
+                    <p class="mb-4"><a href="mailto:cpaez40@areandina.edu.co" class="text-cyan-400 hover:text-cyan-200 transition underline decoration-dotted">cpaez40@areandina.edu.co</a></p>
+                    
+                    <hr class="border-white/10 w-1/3 mx-auto my-4">
+                    
+                    <p class="text-xs opacity-70 italic">
+                        Desarrollo Tecnológico y Asistencia de Código: <br>
+                        <span class="font-semibold text-pink-300">Inteligencia Artificial (Gemini Google)</span>
+                    </p>
+                    <p class="text-[0.65rem] opacity-50 mt-2">Basado en la obra "Epidemiología Crítica y la Salud de los Pueblos" de Jaime Breilh (2021/2003).</p>
+                </div>
+            </footer>
+
+        </main>
+    </div>
+
+    <!-- SCRIPT LÓGICO -->
+    <script>
+        // --- 1. GESTIÓN DE DATOS ---
+        let matrixData = {
+            'sus': { g: [], p: [], i: [] },
+            'sob': { g: [], p: [], i: [] },
+            'sol': { g: [], p: [], i: [] },
+            'seg': { g: [], p: [], i: [] }
+        };
+
+        const nodeNames = {
+            'sus': 'Sustentabilidad', 'sob': 'Soberanía', 'sol': 'Solidaridad', 'seg': 'Seguridad'
+        };
+
+        const dimNames = {
+            'g': 'General', 'p': 'Particular', 'i': 'Individual'
+        };
+
+        // --- 2. AGREGAR PROCESOS ---
+        function addProcess(key, type) {
+            const [node, dim] = key.split('-');
+            const input = document.getElementById(`input-${key}`);
+            const list = document.getElementById(`list-${key}`);
+            const text = input.value.trim();
+
+            if (text) {
+                matrixData[node][dim].push({ text: text, type: type });
+                renderListItem(list, text, type, node, dim, matrixData[node][dim].length - 1);
+                input.value = ''; 
+                input.focus();
+            }
+        }
+
+        function renderListItem(container, text, type, node, dim, index) {
+            const itemDiv = document.createElement('div');
+            const typeClass = type === 'destructive' ? 'item-destructive' : 'item-protective';
+            itemDiv.className = `process-item ${typeClass}`;
+            itemDiv.innerHTML = `
+                <span class="flex-grow">${text}</span>
+                <button onclick="removeItem('${node}', '${dim}', ${index}, this)" class="delete-btn">✕</button>
+            `;
+            container.appendChild(itemDiv);
+        }
+
+        function removeItem(node, dim, index, btnElement) {
+            matrixData[node][dim][index] = null;
+            btnElement.parentElement.remove();
+        }
+
+        // --- 3. GENERAR TABLA SÍNTESIS ---
+        function renderTableSynthesis() {
+            const tName = document.getElementById('territory-input').value;
+            document.getElementById('display-territory').innerText = tName ? `Territorio: ${tName}` : "Territorio: No identificado";
+
+            const container = document.getElementById('table-container');
+            let html = `<table class="synthesis-table">`;
+            
+            html += `<thead><tr>
+                <th class="w-1/6">Dimensión / Nodo</th>
+                <th class="w-1/4">🌱 Sustentabilidad</th>
+                <th class="w-1/4">✊ Soberanía</th>
+                <th class="w-1/4">🤝 Solidaridad</th>
+                <th class="w-1/4">🛡️ Seguridad</th>
+            </tr></thead><tbody>`;
+
+            ['g', 'p', 'i'].forEach(dim => {
+                html += `<tr>`;
+                let label = '';
+                if(dim === 'g') label = 'GENERAL<br><span class="text-[0.6rem] font-normal text-gray-400">Lógica Estructural</span>';
+                if(dim === 'p') label = 'PARTICULAR<br><span class="text-[0.6rem] font-normal text-gray-400">Modos de Vida</span>';
+                if(dim === 'i') label = 'INDIVIDUAL<br><span class="text-[0.6rem] font-normal text-gray-400">Estilos/Fenotipo</span>';
+                
+                html += `<td class="row-header">${label}</td>`;
+
+                ['sus', 'sob', 'sol', 'seg'].forEach(node => {
+                    const items = matrixData[node][dim].filter(x => x !== null);
+                    html += `<td>`;
+                    if (items.length === 0) {
+                        html += `<span class="text-xs text-gray-600 italic">-</span>`;
+                    } else {
+                        items.forEach(item => {
+                            const tagClass = item.type === 'destructive' ? 'tag-crit' : 'tag-prot';
+                            html += `<span class="tag ${tagClass}">${item.text}</span><br>`;
+                        });
+                    }
+                    html += `</td>`;
+                });
+                html += `</tr>`;
+            });
+            html += `</tbody></table>`;
+            container.innerHTML = html;
+            updateChart();
+            switchTab('visualizar');
+        }
+
+        // --- 4. GRÁFICO ---
+        let radarChartInstance = null;
+
+        function updateChart() {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            let dataDest = [];
+            let dataProt = [];
+            
+            ['sus', 'sob', 'sol', 'seg'].forEach(node => {
+                let dCount = 0;
+                let pCount = 0;
+                ['g', 'p', 'i'].forEach(dim => {
+                    matrixData[node][dim].forEach(item => {
+                        if(item && item.type === 'destructive') dCount++;
+                        if(item && item.type === 'protective') pCount++;
+                    });
+                });
+                dataDest.push(dCount);
+                dataProt.push(pCount);
+            });
+
+            if(radarChartInstance) radarChartInstance.destroy();
+
+            radarChartInstance = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Sustentabilidad', 'Soberanía', 'Solidaridad', 'Seguridad'],
+                    datasets: [{
+                        label: 'Carga Malsana',
+                        data: dataDest,
+                        backgroundColor: 'rgba(217, 70, 239, 0.4)',
+                        borderColor: '#d946ef',
+                        borderWidth: 2
+                    }, {
+                        label: 'Potencial Protector',
+                        data: dataProt,
+                        backgroundColor: 'rgba(34, 197, 94, 0.4)',
+                        borderColor: '#22c55e',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(255,255,255,0.1)' },
+                            grid: { color: 'rgba(255,255,255,0.1)' },
+                            pointLabels: { color: 'white', font: { size: 11 } },
+                            ticks: { display: false, stepSize: 1 }
+                        }
+                    },
+                    plugins: { legend: { labels: { color: 'white' } } },
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        // --- 5. LÓGICA HIMUPAC ---
+        function renderHimupacSection() {
+            const container = document.getElementById('himupac-checklist');
+            container.innerHTML = ''; // Limpiar
+
+            let hasContent = false;
+            let count = 0;
+
+            // Iterar sobre todos los datos y extraer solo los destructivos
+            ['sus', 'sob', 'sol', 'seg'].forEach(node => {
+                ['g', 'p', 'i'].forEach(dim => {
+                    const items = matrixData[node][dim].filter(x => x !== null && x.type === 'destructive');
+                    items.forEach(item => {
+                        hasContent = true;
+                        count++;
+                        const itemId = `him-check-${node}-${dim}-${count}`;
+                        
+                        const div = document.createElement('div');
+                        div.className = 'selectable-item bg-black/40 p-3 rounded border border-white/10 flex items-start gap-3';
+                        div.onclick = function() {
+                            this.classList.toggle('selected');
+                            const checkbox = this.querySelector('input');
+                            checkbox.checked = !checkbox.checked;
+                        };
+
+                        div.innerHTML = `
+                            <input type="checkbox" id="${itemId}" class="mt-1 accent-fuchsia-500 pointer-events-none">
+                            <div>
+                                <span class="text-[0.65rem] font-bold text-fuchsia-300 uppercase block">${nodeNames[node]} - ${dimNames[dim]}</span>
+                                <p class="text-xs text-gray-300 leading-tight">${item.text}</p>
+                            </div>
+                        `;
+                        container.appendChild(div);
+                    });
+                });
+            });
+
+            if (!hasContent) {
+                container.innerHTML = `<p class="text-center text-gray-500 italic col-span-full py-4">No hay procesos malsanos registrados en la matriz.</p>`;
+            }
+        }
+
+        // --- NAVEGACIÓN ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+            
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById('btn-' + tabId).classList.add('active');
+            
+            // Si vamos a HiMupAC, renderizamos la sección dinámica
+            if(tabId === 'himupac') {
+                renderHimupacSection();
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // --- EXPORTACIÓN ---
+        function exportToPDF() {
+            const element = document.getElementById('print-area');
+            const tName = document.getElementById('territory-input').value || 'Analisis';
+            const opt = {
+                margin: 0.3,
+                filename: `Determinacion_${tName}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, backgroundColor: '#0f172a', scrollY: 0 },
+                jsPDF: { unit: 'in', format: 'legal', orientation: 'landscape' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+
+        function exportPraxisPDF() {
+            const element = document.getElementById('praxis-print-area');
+            const tName = document.getElementById('territory-input').value || 'PlanAccion';
+            const opt = {
+                margin: 0.5,
+                filename: `PlanAccion_${tName}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, backgroundColor: '#0f172a' },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+
+        function exportHimupacPDF() {
+            const element = document.getElementById('himupac-print-area');
+            const tName = document.getElementById('territory-input').value || 'Propuesta_HiMupAC';
+            const opt = {
+                margin: 0.5,
+                filename: `HiMupAC_${tName}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, backgroundColor: '#0f172a' },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+    </script>
+</body>
+</html>
