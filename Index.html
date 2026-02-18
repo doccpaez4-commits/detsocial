@@ -1,0 +1,1481 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Epidemiología Crítica & HiMupAC | Instrumento Pedagógico</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+
+    <style>
+        /* ===== LIQUID GLASS DESIGN SYSTEM ===== */
+        :root {
+            --glass: rgba(255,255,255,0.62);
+            --glass-border: rgba(255,255,255,0.80);
+            --glass-shadow: 0 8px 32px rgba(120,53,15,0.09), 0 1.5px 6px rgba(120,53,15,0.05);
+            --blur: blur(18px);
+            --accent: #b45309;
+            --accent-dark: #78350f;
+            --sus: #059669; --sob: #b91c1c; --sol: #d97706; --seg: #0369a1;
+            /* Text scale */
+            --txt-heading:  #1c1917;   /* máximo contraste, para h2/h3 principales */
+            --txt-strong:   #292524;   /* casi negro, para labels y sublabels */
+            --txt-body:     #44403c;   /* stone-700 — cuerpo de texto descriptivo  */
+            --txt-caption:  #57534e;   /* stone-600 — notas, citas, hints */
+            --txt-muted:    #78716c;   /* stone-500 — metadatos, timestamps */
+        }
+        *, *::before, *::after { box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: #fdf6ee;
+            background-image:
+                radial-gradient(ellipse 80% 50% at 18% 8%,  rgba(253,186,116,0.22) 0%, transparent 58%),
+                radial-gradient(ellipse 60% 40% at 82% 78%, rgba(167,243,208,0.17) 0%, transparent 55%),
+                radial-gradient(ellipse 50% 60% at 58% 28%, rgba(147,197,253,0.11) 0%, transparent 50%);
+            color: var(--txt-heading);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        /* Heading hierarchy */
+        h1 { font-family: 'Cormorant Garamond', serif; font-size: 2rem;   font-weight: 700; color: var(--txt-heading); letter-spacing: -0.01em; }
+        h2 { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-weight: 700; color: var(--txt-heading); }
+        h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; font-weight: 700; color: var(--txt-strong); }
+        h4 { font-family: 'DM Sans', sans-serif;        font-size: 0.82rem; font-weight: 700; color: var(--txt-strong); text-transform: uppercase; letter-spacing: 0.05em; }
+        h5 { font-family: 'DM Sans', sans-serif;        font-size: 0.75rem; font-weight: 600; color: var(--txt-caption); }
+        /* Body copy and labels use var(--txt-body) by default */
+        p, li { color: var(--txt-body); }
+        label { color: var(--txt-strong); }
+
+        /* Glass panels */
+        .glass {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+            border-radius: 16px;
+            position: relative;
+            z-index: 10;
+            transition: box-shadow 0.3s ease;
+        }
+        .glass::before {
+            content: '';
+            position: absolute; inset: 0;
+            border-radius: 16px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.38) 0%, rgba(255,255,255,0.04) 100%);
+            pointer-events: none;
+        }
+        .glass-sm {
+            background: rgba(255,255,255,0.72);
+            border: 1px solid rgba(255,255,255,0.85);
+            box-shadow: 0 4px 16px rgba(120,53,15,0.07);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 12px;
+        }
+
+        /* Liquid glass inputs */
+        .glass-input {
+            background: rgba(255,255,255,0.82) !important;
+            border: 1px solid rgba(180,83,9,0.22) !important;
+            border-radius: 10px;
+            font-family: 'DM Sans', sans-serif;
+            color: #1c1917;
+            font-size: 0.875rem;
+            line-height: 1.6;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            width: 100%;
+        }
+        .glass-input::placeholder { color: #57534e; font-style: italic; font-size: 0.82rem; }
+        .glass-input:focus {
+            background: rgba(255,255,255,0.97) !important;
+            border-color: var(--accent) !important;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(180,83,9,0.12), 0 4px 12px rgba(180,83,9,0.07);
+        }
+        textarea.glass-input { resize: none; }
+
+        /* Floating orbs */
+        .orb { position: fixed; pointer-events: none; z-index: 0; border-radius: 50%; filter: blur(40px); }
+        .orb-1 { width:580px; height:580px; top:-12%; left:-8%; background:radial-gradient(circle,rgba(253,186,116,0.28),transparent 70%); animation:orb1 26s ease-in-out infinite; }
+        .orb-2 { width:420px; height:420px; bottom:4%; right:-4%; background:radial-gradient(circle,rgba(110,231,183,0.22),transparent 70%); animation:orb2 32s ease-in-out infinite; }
+        .orb-3 { width:280px; height:280px; top:38%; left:58%; background:radial-gradient(circle,rgba(147,197,253,0.18),transparent 70%); animation:orb3 22s ease-in-out infinite; }
+        @keyframes orb1 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(28px,-18px) scale(1.04)} }
+        @keyframes orb2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-18px,14px)} }
+        @keyframes orb3 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(14px,-22px) scale(0.96)} }
+
+        /* Muisca icons */
+        .icon-bg { position: fixed; z-index: 0; pointer-events: none; }
+        .spiral-shape { bottom: 3%; left: -3%; width: 500px; height: 500px; opacity: 0.038; color: #0f766e; animation: float 22s ease-in-out infinite; }
+        .muisca-triangles { top: 18%; right: 3%; width: 360px; height: 360px; opacity: 0.032; color: #b45309; animation: pulse 12s infinite alternate; }
+        .chacana-big { top: -8%; left: 28%; width: 650px; height: 650px; opacity: 0.018; animation: spinSlow 360s linear infinite; }
+        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-18px)} }
+        @keyframes pulse { 0%{opacity:0.022} 100%{opacity:0.05} }
+        @keyframes spinSlow { 100%{transform:rotate(360deg)} }
+
+        /* Navigation */
+        .nav-pill {
+            color: #78716c;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.78rem; font-weight: 600;
+            padding: 8px 14px;
+            border-radius: 50px;
+            transition: all 0.22s ease;
+            white-space: nowrap; cursor: pointer;
+            border: 1.5px solid transparent;
+            background: transparent; letter-spacing: 0.3px;
+        }
+        .nav-pill.active { color: #78350f; background: rgba(180,83,9,0.1); border-color: rgba(180,83,9,0.22); box-shadow: 0 2px 8px rgba(180,83,9,0.1); }
+        .nav-pill:hover:not(.active) { background: rgba(255,255,255,0.5); color: var(--accent); }
+
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+            color: white; font-family: 'DM Sans', sans-serif;
+            font-weight: 600; font-size: 0.82rem; letter-spacing: 0.8px;
+            text-transform: uppercase; padding: 11px 28px;
+            border-radius: 50px; border: none; cursor: pointer;
+            box-shadow: 0 4px 16px rgba(180,83,9,0.28), inset 0 1px 0 rgba(255,255,255,0.2);
+            transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 22px rgba(180,83,9,0.36); filter: brightness(1.05); }
+        .btn-primary:active { transform: translateY(1px); }
+
+        .btn-glass {
+            background: rgba(255,255,255,0.65); color: #78350f;
+            font-family: 'DM Sans', sans-serif; font-weight: 600;
+            font-size: 0.78rem; letter-spacing: 0.4px;
+            padding: 9px 22px; border-radius: 50px;
+            border: 1.5px solid rgba(180,83,9,0.25); cursor: pointer;
+            backdrop-filter: blur(8px); box-shadow: 0 2px 8px rgba(120,53,15,0.08);
+            transition: all 0.2s ease;
+        }
+        .btn-glass:hover { background: rgba(255,247,237,0.9); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(120,53,15,0.14); }
+
+        .btn-tag {
+            font-size: 0.67rem; font-weight: 700; text-transform: uppercase;
+            padding: 4px 10px; border-radius: 6px; cursor: pointer;
+            border: 1.5px solid transparent; transition: all 0.15s;
+            background: rgba(255,255,255,0.7);
+        }
+        .btn-tag-d { color: #be123c; border-color: rgba(190,18,60,0.2); }
+        .btn-tag-d:hover { background: #fff1f2; border-color: #be123c; }
+        .btn-tag-p { color: #15803d; border-color: rgba(21,128,61,0.2); }
+        .btn-tag-p:hover { background: #f0fdf4; border-color: #15803d; }
+
+        /* Process items */
+        .process-item { display: flex; align-items: flex-start; gap: 8px; font-size: 0.82rem; padding: 8px 10px; margin-bottom: 5px; border-radius: 8px; }
+        .item-destructive { background: rgba(254,226,226,0.72); border-left: 3px solid #e11d48; }
+        .item-protective  { background: rgba(220,252,231,0.72); border-left: 3px solid #16a34a; }
+        .delete-btn { color: #d4d0cc; cursor: pointer; font-weight: bold; padding: 0 4px; flex-shrink: 0; transition: color 0.15s; }
+        .delete-btn:hover { color: #ef4444; }
+
+        /* Tags for synthesis table */
+        .tag { display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; margin: 2px; font-weight: 600; }
+        .tag-crit { background: rgba(254,226,226,0.9); color: #991b1b; border: 1px solid rgba(252,165,165,0.6); }
+        .tag-prot { background: rgba(220,252,231,0.9); color: #166534; border: 1px solid rgba(134,239,172,0.6); }
+
+        /* Synthesis table */
+        .synthesis-table { width: 100%; font-size: 0.82rem; border-collapse: collapse; }
+        .synthesis-table th { background: rgba(255,247,237,0.92); padding: 10px 12px; text-align: left; border-bottom: 2px solid #ea580c; color: #78350f; font-weight: 700; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.4px; }
+        .synthesis-table td { padding: 10px 12px; border-bottom: 1px solid rgba(229,231,235,0.6); vertical-align: top; }
+        .synthesis-table .row-header { font-weight: 700; color: #78350f; background: rgba(250,250,249,0.8); border-right: 1px solid rgba(229,231,235,0.6); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.3px; }
+
+        /* Subsunción circles */
+        .subsumption-wrapper { width: 420px; height: 420px; position: relative; display: flex; justify-content: center; align-items: center; }
+        @media (max-width: 480px) { .subsumption-wrapper { transform: scale(0.68); margin: -66px auto; } }
+        .circle-general  { width: 380px; height: 380px; border: 2px dashed rgba(217,119,6,0.55);  border-radius: 50%; position: relative; display: flex; justify-content: center; align-items: center; background: rgba(255,251,235,0.28); backdrop-filter: blur(4px); }
+        .circle-particular { width: 250px; height: 250px; border: 2px dashed rgba(13,148,136,0.55); border-radius: 50%; position: relative; display: flex; justify-content: center; align-items: center; background: rgba(240,253,250,0.28); }
+        .circle-individual  { width: 120px; height: 120px; border: 2px solid rgba(245,158,11,0.8); border-radius: 50%; position: relative; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.82); box-shadow: 0 0 24px rgba(245,158,11,0.15); }
+        .circle-label { position: absolute; top: -13px; left: 50%; transform: translateX(-50%); font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 0.58rem; letter-spacing: 1.5px; background: rgba(255,255,255,0.92); padding: 3px 10px; border: 1px solid rgba(214,211,209,0.55); border-radius: 20px; color: #78350f; z-index: 5; backdrop-filter: blur(6px); }
+
+        /* Subsunción dots */
+        .sub-tag { width: 13px; height: 13px; border-radius: 50%; position: absolute; z-index: 50; cursor: pointer; box-shadow: 0 0 0 2px rgba(255,255,255,0.88), 0 2px 6px rgba(0,0,0,0.22); transition: all 0.25s ease; }
+        .sub-tag:hover { transform: scale(2.8); z-index: 100; }
+        .sub-tag .tooltip { visibility: hidden; width: 175px; background: rgba(28,25,23,0.93); color: #fff; text-align: center; border-radius: 8px; padding: 7px 10px; position: absolute; bottom: 160%; left: 50%; margin-left: -87px; opacity: 0; transition: opacity 0.2s; font-size: 0.68rem; pointer-events: none; z-index: 200; font-family: 'DM Sans', sans-serif; }
+        .sub-tag:hover .tooltip { visibility: visible; opacity: 1; }
+
+        /* HiMupAC */
+        .him-chip { background: rgba(255,247,237,0.88); border: 1.5px solid rgba(249,115,22,0.38); color: #78350f; padding: 5px 12px; border-radius: 20px; font-size: 0.77rem; display: inline-flex; align-items: center; gap: 7px; font-weight: 600; backdrop-filter: blur(6px); }
+        .him-chip .close { cursor: pointer; opacity: 0.5; transition: opacity 0.15s; font-weight: bold; }
+        .him-chip .close:hover { opacity: 1; }
+        .selectable-item { cursor: pointer; transition: all 0.18s; border: 1.5px solid transparent; border-radius: 8px; }
+        .selectable-item:hover { border-color: rgba(217,119,6,0.45); background: rgba(255,251,235,0.7); }
+        .selectable-item.selected { background: rgba(255,247,237,0.82); border-color: rgba(180,83,9,0.38); font-weight: 600; }
+
+        /* Step badge */
+        .step-badge { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem; font-family: 'DM Sans',sans-serif; flex-shrink: 0; background: linear-gradient(135deg,#d97706,#78350f); color: white; }
+
+        /* Autosave */
+        #save-indicator { position: fixed; bottom: 20px; right: 20px; background: rgba(5,150,105,0.9); color: white; padding: 7px 16px; border-radius: 20px; font-size: 0.72rem; font-weight: 600; opacity: 0; transition: opacity 0.4s; z-index: 1000; backdrop-filter: blur(8px); pointer-events: none; }
+        #save-indicator.show { opacity: 1; }
+
+        /* App footer */
+        .app-footer { font-size: 0.68rem; color: #78716c; text-align: center; padding: 20px 16px 10px; line-height: 1.8; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(255,255,255,0.3); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb { background: rgba(180,83,9,0.22); border-radius: 3px; }
+
+        /* Mobile */
+        @media (max-width: 640px) {
+            .glass { border-radius: 12px; }
+            .nav-pill { font-size: 0.72rem; padding: 7px 10px; }
+            textarea, input[type="text"], input[type="date"], select { font-size: 16px !important; }
+        }
+        nav::-webkit-scrollbar { display: none; }
+        nav { scrollbar-width: none; }
+    </style>
+</head>
+<body>
+    <!-- Autosave indicator -->
+    <div id="save-indicator">💾 Guardado</div>
+
+    <!-- FONDOS MUISCAS -->
+    
+    <!-- Liquid glass orbs -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="icon-bg spiral-shape"><svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M50 50 m 0 0 a 5 5 0 0 1 10 0 a 10 10 0 0 1 -20 0 a 15 15 0 0 1 30 0 a 20 20 0 0 1 -40 0 a 25 25 0 0 1 50 0"/></svg></div>
+    <div class="icon-bg muisca-triangles"><svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2"><polygon points="50,10 90,90 10,90"/><polygon points="50,25 75,75 25,75" opacity="0.5"/></svg></div>
+    <div class="icon-bg chacana-big"><svg viewBox="0 0 100 100" fill="currentColor"><path d="M40,0 L60,0 L60,20 L80,20 L80,40 L100,40 L100,60 L80,60 L80,80 L60,80 L60,100 L40,100 L40,80 L20,80 L20,60 L0,60 L0,40 L20,40 L20,20 L40,20 Z"/></svg></div>
+
+    <div class="w-full px-4 md:px-8 py-6 min-h-screen flex flex-col max-w-[1600px] mx-auto relative z-10">
+        
+        <!-- Header -->
+        <header class="flex flex-col md:flex-row justify-between items-center mb-6 glass p-6 bg-white/95 backdrop-blur-sm">
+            <div class="flex items-center gap-5">
+                <svg class="w-14 h-14 text-amber-700 drop-shadow-sm" viewBox="0 0 100 100" fill="currentColor"><path d="M40,0 L60,0 L60,20 L80,20 L80,40 L100,40 L100,60 L80,60 L80,80 L60,80 L60,100 L40,100 L40,80 L20,80 L20,60 L0,60 L0,40 L20,40 L20,20 L40,20 Z"/></svg>
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-black text-amber-900 tracking-tight">Epidemiología Crítica</h1>
+                    <p class="text-sm text-stone-600 font-light tracking-wide uppercase mt-1">Instrumento de Determinación Social & HiMupAC</p>
+                </div>
+            </div>
+            <div class="text-center md:text-right mt-4 md:mt-0">
+                <p class="font-bold text-stone-700 text-xs uppercase tracking-wide border-b border-stone-300 pb-1 mb-1">Modelo Dialéctico</p>
+                <p class="text-xs text-stone-500 font-serif italic">Basado en la obra de Jaime Breilh, 2023</p>
+                <button onclick="clearAllData()" class="mt-2 text-xs text-stone-400 hover:text-red-500 underline cursor-pointer bg-transparent border-none">🗑 Limpiar sesión</button>
+            </div>
+        </header>
+
+        <!-- Navegación -->
+        <nav class="glass p-2 mb-6 flex overflow-x-auto gap-1 sm:gap-1.5 justify-start sm:justify-center sticky top-2 z-40">
+            <button onclick="switchTab('instrucciones')" id="btn-instrucciones" class="nav-pill active">1. Conceptos</button>
+            <button onclick="switchTab('diligenciar')" id="btn-diligenciar" class="nav-pill">2. Matriz</button>
+            <button onclick="switchTab('visualizar')" id="btn-visualizar" class="nav-pill">3. Síntesis</button>
+            <button onclick="switchTab('recomendaciones')" id="btn-recomendaciones" class="nav-pill">4. Praxis</button>
+            <button onclick="switchTab('himupac')" id="btn-himupac" class="nav-pill" style="color:#92400e;">5. HiMupAC</button>
+            <button onclick="switchTab('evaluacion')" id="btn-evaluacion" class="nav-pill" style="color:#065f46;">6. Evaluación</button>
+        </nav>
+
+        <main class="flex-grow w-full">
+            
+            <!-- 1. CONCEPTOS -->
+            <section id="instrucciones" class="tab-content block pb-10">
+                <div class="glass p-6 mb-8 bg-blue-50 border-l-4 border-blue-700 shadow-sm">
+                    <div class="flex gap-4">
+                        <span class="text-3xl">💡</span>
+                        <div>
+                            <h3 class="text-blue-900 font-bold text-sm uppercase tracking-widest mb-1">Propósito Pedagógico</h3>
+                            <p class="text-blue-800 text-sm font-light leading-relaxed">
+                                El propósito de este formato es aportar al proceso pedagógico para analizar la <strong>determinación social de la salud</strong> en los territorios. Buscamos superar la visión fragmentada del riesgo para comprender la salud como un proceso histórico y social complejo.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid md:grid-cols-2 gap-8 mb-8">
+                    <div class="glass p-8 border-t-4 border-amber-700 bg-white">
+                        <h2 class="text-2xl font-bold text-stone-800 mb-4 font-serif">La Ruptura Epistemológica</h2>
+                        <p class="text-stone-600 leading-relaxed text-sm mb-4 text-justify">
+                            La epidemiología convencional suele ver la salud como una suma de "factores de riesgo" desconectados. Esta herramienta te invita a pensar desde la <strong>Determinación Social</strong>. No buscamos culpables individuales, buscamos la lógica histórica y estructural que hace posible que la enfermedad florezca en un territorio.
+                        </p>
+                        <div class="grid grid-cols-2 gap-4 text-sm mt-4">
+                            <div class="bg-stone-100 p-3 rounded">
+                                <strong class="text-stone-700 block mb-2 uppercase text-xs">Paradigma Convencional</strong>
+                                <ul class="list-disc pl-4 text-stone-600 text-xs space-y-1">
+                                    <li>Fragmenta la realidad en variables sueltas ("riesgos").</li>
+                                    <li>Se centra en el individuo descontextualizado.</li>
+                                    <li>Usa la asociación estadística simple (correlación).</li>
+                                </ul>
+                            </div>
+                            <div class="bg-amber-50 p-3 rounded border border-amber-100">
+                                <strong class="text-amber-800 block mb-2 uppercase text-xs">Epidemiología Crítica</strong>
+                                <ul class="list-disc pl-4 text-stone-600 text-xs space-y-1">
+                                    <li>Ve la realidad como un sistema complejo de procesos anidados.</li>
+                                    <li>Conecta lo estructural (General) con lo corporal (Individual).</li>
+                                    <li>Usa la Meta-inferencia.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="glass p-6 bg-stone-50 border-l-4 border-stone-400">
+                        <h3 class="font-bold text-stone-700 text-sm uppercase tracking-widest mb-3">Guía de Dominios</h3>
+                        <ul class="text-sm text-stone-600 space-y-4">
+                            <li class="flex gap-2"><span class="font-black text-amber-800 text-lg">G</span><div><strong class="text-amber-900 block">GENERAL (Lógica Estructural)</strong> ¿Qué políticas nacionales, modelos económicos globales, leyes o imposiciones culturales hegemónicas determinan las reglas del juego en este territorio?</div></li>
+                            <li class="flex gap-2"><span class="font-black text-teal-700 text-lg">P</span><div><strong class="text-teal-800 block">PARTICULAR (Modos de Vida)</strong> ¿Cómo vive, trabaja y se organiza el grupo social específico? ¿Cuáles son sus patrones de exposición colectiva?</div></li>
+                            <li class="flex gap-2"><span class="font-black text-amber-600 text-lg">I</span><div><strong class="text-amber-700 block">SINGULAR (Fenotipo Social)</strong> ¿Cómo se encarnan estos procesos en la biología, la psiquis y el sufrimiento corporal singular de cada persona? Breilh (2023) usa "Singular" para resaltar que no es el individuo abstracto, sino el modo singular en que los procesos sociales se expresan en el cuerpo.</div></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="text-center w-full pt-6"><button onclick="switchTab('diligenciar')" class="btn-primary">Comenzar Análisis ➔</button></div>
+            </section>
+
+            <!-- 2. MATRIZ — generada con JS, SIN document.write() -->
+            <section id="diligenciar" class="tab-content hidden pb-10">
+                <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 bg-stone-100 p-4 rounded-lg border border-stone-200">
+                    <h2 class="text-xl font-bold text-stone-700 font-serif">Laboratorio Territorial</h2>
+                    <input type="text" id="territory-input" placeholder="Nombre del Territorio / Comunidad..."
+                        class="glass-input px-4 py-2.5 w-full sm:w-80 md:w-96"
+                        oninput="autoSave()">
+                </div>
+                <!-- Los paneles se inyectan aquí por JS (fix: sin document.write) -->
+                <div id="matrix-panels" class="grid grid-cols-1 xl:grid-cols-2 gap-5 sm:gap-7 pb-8"></div>
+                <div class="text-center w-full pb-10"><button onclick="switchTab('visualizar')" class="btn-primary">Visualizar Síntesis ➔</button></div>
+            </section>
+
+            <!-- 3. SÍNTESIS -->
+            <section id="visualizar" class="tab-content hidden pb-10">
+                <div class="flex flex-wrap justify-between items-center mb-8 gap-4">
+                    <h2 class="text-2xl font-bold text-stone-700 font-serif">Perfil de Determinación Social</h2>
+                    <button onclick="exportToPDF()" class="btn-glass">🖨️ Imprimir / Guardar PDF</button>
+                </div>
+                <div id="synthesis-print-wrapper">
+                <div id="print-area" class="glass p-5 sm:p-8 md:p-10 w-full mb-6">
+                    <div class="text-center mb-8 pb-6 border-b-2 border-amber-100">
+                        <h1 class="text-3xl font-black text-amber-900 font-serif mb-2">Matriz de Procesos Críticos</h1>
+                        <p class="text-base text-stone-400 font-light" id="display-territory">Territorio: Sin definir</p>
+                    </div>
+                    <div id="table-container" class="mb-12 overflow-x-auto"></div>
+                    <div class="pt-6 mb-8" style="border-top:1px solid rgba(229,231,235,0.4);">
+                        <h4 class="text-xs font-bold text-stone-400 mb-5 uppercase tracking-widest text-center">Balance de Fuerzas</h4>
+                        <div class="max-w-sm mx-auto" style="height:280px;"><canvas id="radarChart"></canvas></div>
+                        <div class="glass-sm p-4 mt-5 text-xs text-stone-600 text-justify max-w-2xl mx-auto" style="border-radius:10px;background:rgba(255,255,255,0.62);border:1px solid rgba(255,255,255,0.8);">
+                            <strong class="text-amber-900 block mb-1 uppercase tracking-wide text-xs">Lectura Crítica — Metabolismo Social:</strong>
+                            Este gráfico visualiza la tensión dialéctica entre la vida y la muerte en el territorio. Un predominio del área <span class="text-red-600 font-bold">ROJA</span> indica un metabolismo social destructivo. El área <span class="text-green-600 font-bold">VERDE</span> representa la resistencia social y los procesos que protegen y potencian la salud colectiva.
+                        </div>
+                    </div>
+                    <div class="pt-6" style="border-top:1px solid rgba(229,231,235,0.4);">
+                        <h4 class="text-xs font-bold text-stone-400 mb-5 uppercase tracking-widest text-center">Subsunción Dialéctica</h4>
+                        <div class="flex justify-center overflow-x-auto">
+                            <div class="subsumption-wrapper" id="subsumption-graphic"></div>
+                        </div>
+                        <div class="flex flex-wrap justify-center gap-3 sm:gap-4 mt-4 mb-4">
+                            <span class="flex items-center gap-1.5 text-xs font-semibold text-stone-500"><span class="w-3 h-3 rounded-full inline-block" style="background:#059669;"></span>Sustentabilidad</span>
+                            <span class="flex items-center gap-1.5 text-xs font-semibold text-stone-500"><span class="w-3 h-3 rounded-full inline-block" style="background:#b91c1c;"></span>Soberanía</span>
+                            <span class="flex items-center gap-1.5 text-xs font-semibold text-stone-500"><span class="w-3 h-3 rounded-full inline-block" style="background:#d97706;"></span>Solidaridad</span>
+                            <span class="flex items-center gap-1.5 text-xs font-semibold text-stone-500"><span class="w-3 h-3 rounded-full inline-block" style="background:#0369a1;"></span>Seguridad</span>
+                        </div>
+                        <div class="glass-sm p-4 text-xs text-stone-600 text-justify max-w-2xl mx-auto" style="border-radius:10px;background:rgba(255,255,255,0.62);border:1px solid rgba(255,255,255,0.8);">
+                            <strong class="text-amber-900 block mb-1 uppercase tracking-wide text-xs">Lectura Crítica — Jerarquía de Determinación:</strong>
+                            No somos individuos aislados. La dimensión <strong>General</strong> (Círculo Externo) envuelve y determina las condiciones de posibilidad de la dimensión <strong>Particular</strong> (Modos de vida grupales), y esta a su vez condiciona lo <strong>Singular</strong> (Cuerpo y estilos de vida). Los puntos de color muestran dónde se concentran los problemas.
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center mt-6 pb-8 flex flex-wrap justify-center gap-3"><button onclick="switchTab('diligenciar')" class="btn-glass">← Volver a Matriz</button><button onclick="switchTab('recomendaciones')" class="btn-primary">Continuar al Plan de Acción ➔</button></div>
+                </div><!-- /synthesis-print-wrapper -->
+            </section>
+
+            <!-- 4. PRAXIS -->
+            <section id="recomendaciones" class="tab-content hidden pb-10">
+                <div class="max-w-6xl mx-auto">
+                    <h2 class="text-2xl font-bold text-stone-700 font-serif mb-6">Matriz de Acción Crítica</h2>
+                    <div class="glass p-5 sm:p-8 mb-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6 text-center pb-5" style="border-bottom:1px solid rgba(229,231,235,0.4);">
+                            <div class="hidden sm:block"></div>
+                            <div class="glass-sm p-2 text-xs font-bold uppercase tracking-wide" style="color:#991b1b;background:rgba(254,226,226,0.6);">🛡️ Prevención Crítica (Transformación)</div>
+                            <div class="glass-sm p-2 text-xs font-bold uppercase tracking-wide" style="color:#166534;background:rgba(220,252,231,0.6);">🌱 Promoción Emancipadora (Potenciación)</div>
+                        </div>
+                        <div class="space-y-8">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div class="glass-sm p-4 flex flex-col justify-center"><h4 class="font-bold text-amber-800 text-sm">GENERAL</h4><p class="text-xs text-stone-600">Nivel Estratégico</p></div>
+                                <textarea id="praxis-g-prev" class="glass-input p-3 sm:p-4 h-28 sm:h-32" placeholder="Transformación Estructural. ¿Qué políticas, leyes o modelos económicos debemos cambiar para frenar la determinación destructiva desde la raíz?" oninput="autoSave()"></textarea>
+                                <textarea id="praxis-g-prom" class="glass-input p-3 sm:p-4 h-28 sm:h-32" placeholder="Institucionalización. ¿Cómo convertir las luchas sociales y logros comunitarios en derechos permanentes o políticas de estado?" oninput="autoSave()"></textarea>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div class="glass-sm p-4 flex flex-col justify-center"><h4 class="font-bold text-teal-800 text-sm">PARTICULAR</h4><p class="text-xs text-stone-600">Nivel Táctico</p></div>
+                                <textarea id="praxis-p-prev" class="glass-input p-3 sm:p-4 h-28 sm:h-32" placeholder="Organización y Blindaje. ¿Qué acciones gremiales, barriales o comunitarias pueden proteger al grupo de la exposición masiva?" oninput="autoSave()"></textarea>
+                                <textarea id="praxis-p-prom" class="glass-input p-3 sm:p-4 h-28 sm:h-32" placeholder="Potenciación de Modos de Vida. ¿Cómo fortalecer la identidad, las redes de solidaridad y la cultura propia del grupo?" oninput="autoSave()"></textarea>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div class="glass-sm p-4 flex flex-col justify-center"><h4 class="font-bold text-amber-600 text-sm">SINGULAR</h4><p class="text-xs text-stone-600">Nivel Puntual</p></div>
+                                <textarea id="praxis-i-prev" class="glass-input p-3 sm:p-4 h-28 sm:h-32" placeholder="Protección Inmediata. Acciones clínicas o cambios de conducta individual para reducir el daño ya encarnado." oninput="autoSave()"></textarea>
+                                <textarea id="praxis-i-prom" class="glass-input p-3 sm:p-4 h-28 sm:h-32" placeholder="Empoderamiento. Educación crítica, autoconocimiento y cuidado del cuerpo." oninput="autoSave()"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center pb-8 flex justify-center gap-4">
+                        <button onclick="generarReporte('praxis')" class="btn-glass">🖨️ Descargar Plan PDF</button>
+                        <button onclick="switchTab('himupac')" class="btn-primary">Ir a Metodología HiMupAC ➔</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. HIMUPAC -->
+            <section id="himupac" class="tab-content hidden pb-10">
+                <div class="max-w-6xl mx-auto">
+                    <!-- Config strip -->
+                    <div class="glass p-4 sm:p-5 mb-5 flex flex-wrap gap-4 items-center justify-between" style="border-left:3px solid rgba(180,83,9,0.5);">
+                        <div>
+                            <h3 class="font-bold text-amber-900 text-lg">Método HiMupAC</h3>
+                            <p class="text-xs text-stone-500 mt-0.5">Historias Musicales para el Aprendizaje Colectivo — Páez-Mora & Cetina-Matallana (2025)</p>
+                        </div>
+                        <div class="flex flex-wrap gap-3">
+                            <div><label class="text-xs text-stone-600 block mb-1 font-semibold uppercase tracking-wide">Facilitador/a</label><input type="text" id="him-autor" placeholder="Nombre..." class="glass-input px-3 py-2 w-40 sm:w-52" oninput="autoSave()"></div>
+                            <div><label class="text-xs text-stone-600 block mb-1 font-semibold uppercase tracking-wide">Fecha</label><input type="date" id="him-fecha" class="glass-input px-3 py-2" oninput="autoSave()"></div>
+                        </div>
+                    </div>
+
+                    <div class="grid lg:grid-cols-3 gap-5 sm:gap-7 mb-8">
+
+                        <!-- LEFT COL: Paso 1 — Diagnóstico -->
+                        <div class="lg:col-span-1">
+                            <div class="glass p-5 sm:p-6" style="border-top:3px solid rgba(120,53,15,0.5);">
+                                <h3 class="text-base font-bold text-amber-900 mb-2 pb-2" style="border-bottom:1px solid rgba(229,231,235,0.5);">1. Diagnóstico Territorial</h3>
+                                <p class="text-xs text-stone-500 mb-3 leading-relaxed text-justify">Seleccione los procesos de la Matriz que guiarán la historia. Los <span class="font-bold text-red-700">Nudos Críticos</span> (Malsanos) son los problemas que la historia debe abordar; los <span class="font-bold text-green-700">Procesos Protectores</span> son los saberes y fortalezas comunitarias que deben visibilizarse como camino de transformación (Breilh, 2023).</p>
+
+                                <div class="mb-3">
+                                    <div class="text-xs font-bold uppercase tracking-wide mb-1.5 flex items-center gap-1.5" style="color:#be123c;">
+                                        <span class="w-2 h-2 rounded-sm inline-block" style="background:#e11d48;"></span> Nudos Críticos (Malsanos)
+                                    </div>
+                                    <div id="himupac-checklist-dest" class="flex flex-col gap-1 max-h-40 overflow-y-auto p-2 rounded-xl" style="background:rgba(255,241,242,0.5);border:1px solid rgba(252,165,165,0.4);"></div>
+                                </div>
+                                <div class="mb-4">
+                                    <div class="text-xs font-bold uppercase tracking-wide mb-1.5 flex items-center gap-1.5" style="color:#15803d;">
+                                        <span class="w-2 h-2 rounded-full inline-block" style="background:#16a34a;"></span> Fortalezas Comunitarias (Protectores)
+                                    </div>
+                                    <div id="himupac-checklist-prot" class="flex flex-col gap-1 max-h-40 overflow-y-auto p-2 rounded-xl" style="background:rgba(240,253,244,0.5);border:1px solid rgba(134,239,172,0.4);"></div>
+                                </div>
+                                <div class="text-xs font-bold text-stone-400 uppercase tracking-wide mb-1.5">Seleccionados para la historia:</div>
+                                <div id="himupac-selected-list" class="flex flex-wrap gap-1.5 min-h-[36px] p-2 rounded-xl" style="border:1.5px dashed rgba(229,231,235,0.7);"></div>
+                            </div>
+                        </div>
+
+                        <!-- RIGHT COL: Pasos 2–7 -->
+                        <div class="lg:col-span-2 space-y-4 sm:space-y-5">
+
+                            <!-- Paso 2: Fundamentación Intercultural -->
+                            <div class="glass p-5 sm:p-6" style="background:rgba(219,234,254,0.4);border-color:rgba(147,197,253,0.45);">
+                                <h3 class="text-base font-bold text-blue-800 mb-2 flex items-center gap-2.5 pb-2" style="border-bottom:1px solid rgba(147,197,253,0.4);">
+                                    <span class="step-badge" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);">2</span>
+                                    Fundamentación Intercultural
+                                </h3>
+                                <p class="text-xs text-blue-800 mb-3 leading-relaxed">La interculturalidad crítica (Walsh, 2010) reconoce al Otro con sus diferencias y valor en sí mismo, alejándose de concepciones utilitaristas. No se trata de adaptar técnicamente el mensaje, sino de <em>co-construirlo</em> desde el diálogo. Identifique los saberes, prácticas y cosmovisiones propias del grupo que deben estar presentes en la historia.</p>
+                                <label class="text-xs font-semibold text-stone-400 uppercase tracking-wide block mb-1.5">Saberes locales y cosmovisión a integrar</label>
+                                <textarea id="him-fundamentos" class="glass-input p-3 h-20" style="background:rgba(255,255,255,0.8)!important;" placeholder="Ej: Prácticas de medicina tradicional, rituales comunitarios, formas propias de nombrar la enfermedad, creencias sobre el cuerpo y la salud, autoridades espirituales o líderes reconocidos... ¿Qué saberes del territorio queremos que hablen en esta historia?" oninput="autoSave()"></textarea>
+                            </div>
+
+                            <!-- Paso 3: Sujeto / Experiencia Vicaria -->
+                            <div class="glass p-5 sm:p-6" style="border-top:3px solid rgba(180,83,9,0.45);">
+                                <h3 class="text-base font-bold text-amber-900 mb-2 pb-2" style="border-bottom:1px solid rgba(229,231,235,0.5);color:#1c1917;">
+                                    <span class="step-badge inline-flex mr-2" style="width:28px;height:28px;font-size:0.8rem;">3</span>
+                                    Sujeto — Experiencia Vicaria
+                                </h3>
+                                <p class="text-xs text-stone-700 mb-3 leading-relaxed">El personaje es el eje emocional de la historia. Según Bandura (citado en Páez-Mora, 2025), la <em>experiencia vicaria</em> permite que la audiencia se identifique con la situación del personaje y aprenda desde esa empatía ("Ese soy yo"). El personaje debe ser co-construido con la comunidad: preguntarles <strong>¿cómo se llamaría? ¿qué ropa usaría? ¿a qué se dedica?</strong> Incluya rasgos de la ocupación, edad y vestuario propios del territorio.</p>
+                                <div class="grid sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-1.5 block">Perfil del personaje</label>
+                                        <textarea id="him-personaje-perfil" class="glass-input p-3 h-28" placeholder="Nombre elegido por la comunidad, edad, ocupación, vestuario característico. Describa rasgos físicos y sociales que lo sitúen en el territorio. Si usa IA para generar la imagen, este texto será el prompt." oninput="autoSave()"></textarea>
+                                    </div>
+                                    <div>
+                                        <label class="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-1.5 block">Vivencia del problema</label>
+                                        <textarea id="him-personaje-vivencia" class="glass-input p-3 h-28" placeholder="¿Cómo vive, siente y sufre este personaje el proceso malsano seleccionado? Narre desde sus emociones, no desde el diagnóstico clínico. Ej: 'A Lucas le cuesta respirar cuando juega, siente que su cuerpo le falla y que no puede disfrutar lo que le gusta...'" oninput="autoSave()"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Paso 4: Creación de contenidos — Estrategia Narrativa -->
+                            <div class="glass p-5 sm:p-6" style="border-top:3px solid rgba(180,83,9,0.45);">
+                                <h3 class="text-base font-bold text-amber-900 mb-2 pb-2" style="border-bottom:1px solid rgba(229,231,235,0.5);color:#1c1917;">
+                                    <span class="step-badge inline-flex mr-2" style="width:28px;height:28px;font-size:0.8rem;">4</span>
+                                    Creación — Estrategia Narrativa
+                                </h3>
+                                <p class="text-xs text-stone-700 mb-3 leading-relaxed">La historia debe transitar entre la identificación del problema y la posibilidad de transformación. El nivel de transformación orienta el horizonte: <strong>Singular</strong> apunta a cambios en estilos de vida; <strong>Particular</strong> al fortalecimiento del tejido social y la movilización colectiva; <strong>General</strong> a visibilizar estructuras de poder e injusticia. Una misma historia puede operar en varios niveles simultáneamente.</p>
+                                <div class="mb-3">
+                                    <label class="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-1.5 block">Nivel de transformación articulada</label>
+                                    <select id="him-nivel" class="glass-input p-2.5" onchange="autoSave()">
+                                        <option value="">Seleccione el nivel de impacto deseado...</option>
+                                        <option value="Singular — Estilos de vida">Singular: Cambiar estilos de vida y detección temprana</option>
+                                        <option value="Particular — Tejido y movilización">Particular: Fortalecer tejido comunitario y movilización</option>
+                                        <option value="General — Estructura y poder">General: Visibilizar injusticias, relaciones de poder y estructuras</option>
+                                        <option value="Múltiples niveles articulados">Múltiples niveles articulados</option>
+                                    </select>
+                                </div>
+                                <label class="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-1.5 block">Trama y desenlace</label>
+                                <textarea id="him-trama" class="glass-input p-3 h-32" placeholder="Desarrolle la historia. ¿Cómo el personaje vive el problema? ¿Qué desencadena la reflexión o el cambio? ¿Cómo se organiza o conecta con otros para transformar la situación? Evite los 'finales mágicos' — el desenlace debe ser realista y situado en el territorio. Use los regionalismos, dichos y expresiones propias de la comunidad." oninput="autoSave()"></textarea>
+                            </div>
+
+                            <!-- Paso 5: Estética Sonora / Adaptación Cultural -->
+                            <div class="glass p-5 sm:p-6" style="border-top:3px solid rgba(180,83,9,0.45);">
+                                <h3 class="text-base font-bold text-amber-900 mb-2 pb-2" style="border-bottom:1px solid rgba(229,231,235,0.5);color:#1c1917;">
+                                    <span class="step-badge inline-flex mr-2" style="width:28px;height:28px;font-size:0.8rem;">5</span>
+                                    Adaptación Cultural — Estética Sonora
+                                </h3>
+                                <p class="text-xs text-stone-700 mb-3 leading-relaxed">La música actúa como medio de conexión emocional y cultural. Los ritmos, melodías y sonidos deben ser co-construidos con la comunidad: preguntarle al grupo <em>"si esta historia fuera una canción, ¿cómo sonaría? ¿sería alegre, nostálgica, de lucha?"</em> Use artistas locales si es posible. Las rimas asonantes o consonantes ayudan a que la letra sea memorable. Los saberes populares — dichos, frases, palabras del territorio — son el corazón de la adaptación cultural (Páez-Mora, 2025).</p>
+                                <div class="grid sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-1.5 block">Ritmo, melodía y sonoridad</label>
+                                        <textarea id="him-ritmo" class="glass-input p-3 h-28" placeholder="¿Qué ritmo musical es propio de este territorio? (Bambuco, mapalé, rap, vallenato, cumbia, trap...) ¿Sonidos ambientales que quieran incluir? ¿La canción será alegre, de denuncia, nostálgica? ¿Hay artistas locales que puedan participar?" oninput="autoSave()"></textarea>
+                                    </div>
+                                    <div>
+                                        <label class="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-1.5 block">Saberes populares, dichos y regionalismos</label>
+                                        <textarea id="him-dichos" class="glass-input p-3 h-28" placeholder="Regionalismos, dichos, frases o palabras del territorio — sin importar lo 'raras' que parezcan — que deben aparecer en la letra. También costumbres, nombres propios de lugares, plantas medicinales, prácticas cotidianas que den identidad a la historia. Ej: 'maluquiar', 'el frío del páramo', 'agüitas de la abuela'..." oninput="autoSave()"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Paso 6: Puesta en Escena -->
+                            <div class="glass p-5 sm:p-6" style="border-top:3px solid rgba(180,83,9,0.45);">
+                                <h3 class="text-base font-bold text-amber-900 mb-2 pb-2" style="border-bottom:1px solid rgba(229,231,235,0.5);color:#1c1917;">
+                                    <span class="step-badge inline-flex mr-2" style="width:28px;height:28px;font-size:0.8rem;">6</span>
+                                    Puesta en Escena — Co-construcción
+                                </h3>
+                                <p class="text-xs text-stone-700 mb-3 leading-relaxed">La puesta en escena es el proceso de divulgación con el grupo social: se presenta la pieza audiovisual a la comunidad o grupo, se escuchan sus comentarios, limitaciones y aciertos, y con esos insumos se ajusta (evolución). No es un producto terminado sino una <em>versión en diálogo permanente</em>. Planifique en qué espacio, con quiénes y bajo qué dinámica se hará la primera presentación.</p>
+                                <label class="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-1.5 block">Estrategia de uso y primera socialización</label>
+                                <textarea id="him-puesta" class="glass-input p-3 h-24" style="background:rgba(255,255,255,0.8)!important;" placeholder="¿Dónde y con quiénes se presentará? (aula, reunión comunitaria, evento cultural, consulta...) ¿Qué actividades acompañarán la escucha? (grupo focal, conversatorio, encuesta de percepción...) ¿Cómo se documentarán los comentarios para la evolución del producto?" oninput="autoSave()"></textarea>
+                            </div>
+
+                            <!-- Paso 7: Publicación -->
+                            <div class="glass p-5 sm:p-6" style="background:rgba(240,253,244,0.45);border-color:rgba(134,239,172,0.45);">
+                                <h3 class="text-base font-bold text-green-800 mb-2 pb-2 flex items-center gap-2.5" style="border-bottom:1px solid rgba(134,239,172,0.4);">
+                                    <span class="step-badge" style="background:linear-gradient(135deg,#16a34a,#15803d);">7</span>
+                                    Publicación y Difusión
+                                </h3>
+                                <p class="text-xs text-green-800 mb-3 leading-relaxed">Luego de la evolución participativa, la pieza audiovisual se publica para ampliar su alcance. Las piezas pueden funcionar como <em>voz del colectivo</em> en la lucha por justicia social y la visibilización de inequidades (Páez-Mora, 2025). Defina los canales y la estrategia de difusión considerando el alcance deseado y los recursos disponibles.</p>
+                                <div class="grid sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-1.5 block">Canales de publicación</label>
+                                        <textarea id="him-publicacion-canales" class="glass-input p-3 h-20" style="background:rgba(255,255,255,0.8)!important;" placeholder="Redes sociales (TikTok, Instagram, YouTube, Facebook), emisoras de radio local, eventos culturales o académicos, consultorios, salas de espera, aulas, WhatsApp comunitario, carteleras digitales..." oninput="autoSave()"></textarea>
+                                    </div>
+                                    <div>
+                                        <label class="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-1.5 block">Estrategia y alcance esperado</label>
+                                        <textarea id="him-publicacion-estrategia" class="glass-input p-3 h-20" style="background:rgba(255,255,255,0.8)!important;" placeholder="¿Qué público se quiere impactar? ¿Qué acciones complementarán la publicación? ¿La pieza puede convertirse en insumo para políticas públicas, debates comunitarios o incidencia política?" oninput="autoSave()"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div><!-- /right col -->
+                    </div><!-- /grid -->
+
+                    <div class="text-center pb-8 flex flex-wrap justify-center gap-3">
+                        <button onclick="generarReporte('himupac')" class="btn-glass">📝 Generar Propuesta PDF</button>
+                        <button onclick="switchTab('evaluacion')" class="btn-primary">Ir a Evaluación ➔</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 6. EVALUACIÓN -->
+            <section id="evaluacion" class="tab-content hidden pb-10">
+                <div class="max-w-5xl mx-auto">
+                    <div class="glass p-5 sm:p-7 mb-6" style="background:rgba(236,253,245,0.5);border-color:rgba(110,231,183,0.5);">
+                        <div class="flex gap-3 items-start">
+                            <span class="text-2xl flex-shrink-0">📊</span>
+                            <div>
+                                <h2 class="text-xl sm:text-2xl font-bold mb-1" style="color:#14532d;">Evaluación del Proceso HiMupAC</h2>
+                                <p class="text-sm leading-relaxed" style="color:#14532d;">La evaluación es una fase continua y flexible que se adapta al contexto de cada territorio. Según Páez-Mora & Cetina-Matallana (2025), se sugiere dialogar sobre el efecto de la estrategia, la percepción de cambio social y la receptividad de la comunidad. Puede medir diferentes tipos de indicadores dependiendo de la experiencia del equipo y los recursos disponibles.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Indicadores dinámicos desde la matriz -->
+                    <div class="glass p-5 sm:p-6 mb-5" style="border-top:3px solid rgba(5,150,105,0.5);">
+                        <h3 class="text-base font-bold text-green-800 mb-3 pb-2" style="border-bottom:1px solid rgba(229,231,235,0.5);">Indicadores Sugeridos desde la Matriz</h3>
+                        <p class="text-xs text-stone-700 mb-4 leading-relaxed">Con base en los procesos malsanos registrados en su Matriz de Determinación Social, el sistema sugiere indicadores de evaluación para medir el impacto de la estrategia HiMupAC. Edite o complemente según su contexto.</p>
+                        <div id="eval-dynamic-indicators" class="space-y-2"></div>
+                        <p class="text-xs text-stone-400 mt-3 italic" id="eval-no-data" style="display:none;">Complete primero la Matriz de Procesos (Tab 2) para generar indicadores automáticos.</p>
+                    </div>
+
+                    <!-- Evaluación cualitativa -->
+                    <div class="grid sm:grid-cols-2 gap-5 mb-5">
+                        <div class="glass p-5">
+                            <h4 class="text-sm font-bold uppercase tracking-wide mb-3 pb-2" style="color:#292524;" style="border-bottom:1px solid rgba(229,231,235,0.5);">🗣 Percepción Comunitaria</h4>
+                            <p class="text-xs text-stone-700 mb-3 leading-relaxed">Resultados de grupos focales, entrevistas o conversatorios después de la puesta en escena. ¿Cómo resonó la historia? ¿Qué emociones generó? ¿Reconocieron su realidad en el personaje?</p>
+                            <textarea id="eval-percepcion" class="glass-input p-3 h-28" placeholder="Describa las reacciones de la comunidad al ver/escuchar la pieza. Incluya citas textuales si las tiene (sin nombres propios). ¿Se identificaron con el personaje? ¿Qué cambiarían?" oninput="autoSave()"></textarea>
+                        </div>
+                        <div class="glass p-5">
+                            <h4 class="text-sm font-bold uppercase tracking-wide mb-3 pb-2" style="color:#292524;" style="border-bottom:1px solid rgba(229,231,235,0.5);">🔄 Cambio Percibido</h4>
+                            <p class="text-xs text-stone-700 mb-3 leading-relaxed">Valoración del alcance de la estrategia en términos de movilización, reflexión crítica o acción colectiva. ¿La historia abrió nuevas discusiones? ¿Generó organización comunitaria?</p>
+                            <textarea id="eval-cambio" class="glass-input p-3 h-28" placeholder="¿Se observaron cambios en la discusión sobre el problema? ¿El grupo comenzó a hablar de causas estructurales, no solo síntomas? ¿Hay indicios de movilización, demanda de derechos o acción colectiva?" oninput="autoSave()"></textarea>
+                        </div>
+                        <div class="glass p-5">
+                            <h4 class="text-sm font-bold uppercase tracking-wide mb-3 pb-2" style="color:#292524;" style="border-bottom:1px solid rgba(229,231,235,0.5);">🎯 Indicadores Cuantitativos</h4>
+                            <p class="text-xs text-stone-700 mb-3 leading-relaxed">Métricas de alcance o proceso que puedan ser útiles para reportes institucionales o académicos. Adapte a sus recursos.</p>
+                            <textarea id="eval-cuantitativo" class="glass-input p-3 h-28" placeholder="Ej: Número de personas que vieron la pieza, reproducciones digitales, porcentaje que identificó el problema principal, número de conversatorios realizados, grupos de WhatsApp donde se compartió..." oninput="autoSave()"></textarea>
+                        </div>
+                        <div class="glass p-5">
+                            <h4 class="text-sm font-bold uppercase tracking-wide mb-3 pb-2" style="color:#292524;" style="border-bottom:1px solid rgba(229,231,235,0.5);">🔧 Evolución de la Pieza</h4>
+                            <p class="text-xs text-stone-700 mb-3 leading-relaxed">Con base en la puesta en escena, identifique qué ajustes requiere la historia antes de su publicación final. La evolución es parte esencial del método (Páez-Mora, 2025).</p>
+                            <textarea id="eval-evolucion" class="glass-input p-3 h-28" placeholder="¿Qué palabras, imágenes o significados resultaron confusos para la comunidad? ¿Qué debe ajustarse antes de publicar? ¿Hay elementos culturales que faltaron o que deben modificarse?" oninput="autoSave()"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Reflexión final -->
+                    <div class="glass p-5 mb-6" style="background:rgba(255,251,235,0.55);border-color:rgba(253,211,77,0.4);">
+                        <h4 class="text-sm font-bold text-amber-800 uppercase tracking-wide mb-3 pb-2" style="border-bottom:1px solid rgba(253,211,77,0.3);">💬 Reflexión Crítica del Proceso</h4>
+                        <p class="text-xs text-amber-900 mb-3 leading-relaxed">Fals-Borda (2015) resalta la importancia de una <em>praxis crítica sentipensante</em> en las intervenciones sociales. Esta reflexión permite al equipo evaluar si el proceso fue genuinamente participativo o si reprodujo dinámicas hegemónicas. Sea honesto/a — esto fortalece futuras aplicaciones.</p>
+                        <textarea id="eval-reflexion" class="glass-input p-3 h-24" style="background:rgba(255,255,255,0.8)!important;" placeholder="¿El proceso de construcción fue realmente participativo o hubo imposición técnica? ¿La comunidad se apropió del producto o lo percibe como externo? ¿Qué aprendizajes deja este proceso para futuras aplicaciones de HiMupAC?" oninput="autoSave()"></textarea>
+                    </div>
+
+                    <div class="text-center pb-8 flex flex-wrap justify-center gap-3">
+                        <button onclick="generarReporte('evaluacion')" class="btn-glass">📋 Generar Informe PDF</button>
+                        <button onclick="switchTab('instrucciones')" class="btn-primary">← Volver al inicio</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    
+    <!-- APP FOOTER -->
+    <footer class="app-footer">
+        <p>Diseño elaborado por <strong>Carlos Duván Páez Mora</strong> — Docente Maestría en Salud Pública, Fundación Universitaria Área Andina, Bogotá.</p>
+        <p>Diseño apoyado por IA &nbsp;|&nbsp; Basado en la obra de Jaime Breilh (2023) y el método HiMupAC de Páez-Mora & Cetina-Matallana (2025)</p>
+    </footer>
+</div>
+
+    <script>
+    // ============================================================
+    // DATOS
+    // ============================================================
+    let matrixData = {
+        sus: { g: [], p: [], i: [] },
+        sob: { g: [], p: [], i: [] },
+        sol: { g: [], p: [], i: [] },
+        seg: { g: [], p: [], i: [] }
+    };
+    let himupacSelection = [];
+    let myRadarChart = null;
+    const nodeNames = { sus: 'Sustentabilidad', sob: 'Soberanía', sol: 'Solidaridad', seg: 'Seguridad' };
+    const nodeColors = { sus: '#059669', sob: '#b91c1c', sol: '#d97706', seg: '#0369a1' };
+
+    // ============================================================
+    // FIX 1: CONSTRUCCIÓN DEL DOM SIN document.write()
+    // ============================================================
+    const sectionDefs = [
+        {
+            id: 'sus', t: '🌱 Sustentabilidad', c: 'border-emerald-600', tc: 'text-emerald-800',
+            g: 'General: ¿Qué modelo de acumulación predomina? (Ej: Extractivismo minero, monocultivo, despojo). ¿Qué leyes protegen o vulneran la naturaleza?',
+            p: 'Particular: ¿El grupo vive cerca de fuentes tóxicas? ¿Tienen acceso soberano al agua? ¿Prácticas de reciclaje?',
+            i: 'Singular: ¿Cómo se encarnan estos procesos en los cuerpos? ¿Signos de intoxicación, enfermedades respiratorias, dérmicas? ¿Carga biológica alterada por el ambiente?'
+        },
+        {
+            id: 'sob', t: '✊ Soberanía', c: 'border-red-700', tc: 'text-red-800',
+            g: 'General: ¿Dependencia económica extranjera? ¿Pérdida de soberanía alimentaria? ¿Imposición tecnológica?',
+            p: 'Particular: ¿Capacidad de autogestión? ¿Sindicatos o gremios fuertes? ¿Control sobre medios de trabajo?',
+            i: 'Singular: ¿La persona conoce sus derechos? ¿Tiene capacidad de decisión autónoma o vive alienada del sistema productivo?'
+        },
+        {
+            id: 'sol', t: '🤝 Solidaridad', c: 'border-amber-600', tc: 'text-amber-800',
+            g: 'General: ¿Predomina el individualismo/competencia o la cooperación? ¿Políticas de lo común?',
+            p: 'Particular: ¿Redes de apoyo, mingas? ¿O violencia intrafamiliar y discriminación?',
+            i: 'Singular: ¿Cómo se expresa la soledad, angustia, aislamiento en la corporalidad? ¿Qué dice la autoestima e identidad cultural?'
+        },
+        {
+            id: 'seg', t: '🛡️ Seguridad Integral', c: 'border-blue-600', tc: 'text-blue-800',
+            g: 'General: ¿Salud como derecho o negocio? ¿Sistemas de pensiones? ¿Estado de bienestar?',
+            p: 'Particular: ¿Trabajo seguro o precario? ¿Vivienda digna? ¿Seguridad alimentaria grupal?',
+            i: 'Singular: ¿La persona tiene acceso real (no solo formal) a tratamientos? ¿Traumas físicos acumulados? ¿Estado nutricional?'
+        }
+    ];
+
+    function buildMatrixPanels() {
+        const container = document.getElementById('matrix-panels');
+        container.innerHTML = '';
+        const topColors = { sus:'rgba(5,150,105,0.55)', sob:'rgba(185,28,28,0.55)', sol:'rgba(217,119,6,0.55)', seg:'rgba(3,105,161,0.55)' };
+        sectionDefs.forEach(s => {
+            const panel = document.createElement('div');
+            panel.className = 'glass p-5 sm:p-6';
+            panel.style.borderTop = `3px solid ${topColors[s.id]}`;
+            const dimLabels = { g: 'GENERAL', p: 'PARTICULAR', i: 'SINGULAR (Fenotipo Social)' };
+            const tc = {sus:'color:#065f46',sob:'color:#7f1d1d',sol:'color:#78350f',seg:'color:#0c4a6e'}[s.id]; let innerHtml = `<h3 class="font-bold text-base mb-5 uppercase tracking-widest flex items-center gap-2" style="${tc}">${s.t}</h3><div class="space-y-5">`;
+            ['g', 'p', 'i'].forEach(d => {
+                innerHtml += `
+                    <div>
+                        <label class="text-xs font-bold text-stone-400 uppercase tracking-widest block mb-1.5">${dimLabels[d]}</label>
+                        <div id="list-${s.id}-${d}" class="mb-2 space-y-1"></div>
+                        <textarea id="input-${s.id}-${d}" class="glass-input p-3 h-20" placeholder="${s[d]}"></textarea>
+                        <div class="flex justify-end gap-3 mt-2">
+                            <button onclick="addProcess('${s.id}-${d}','destructive')" class='btn-tag btn-tag-d'>Malsano +</button>
+                            <button onclick="addProcess('${s.id}-${d}','protective')" class='btn-tag btn-tag-p'>Protector +</button>
+                        </div>
+                    </div>`;
+            });
+            innerHtml += '</div>';
+            panel.innerHTML = innerHtml;
+            container.appendChild(panel);
+        });
+    }
+
+    // ============================================================
+    // FIX 2: GESTIÓN DE PROCESOS CON ÍNDICES ESTABLES
+    // Se usa splice para eliminar realmente, no poner null.
+    // El índice se busca por referencia al objeto, no por posición.
+    // ============================================================
+    function addProcess(k, type) {
+        const [n, d] = k.split('-');
+        const inputEl = document.getElementById(`input-${k}`);
+        const v = inputEl.value.trim();
+        if (!v) return;
+        const item = { text: v, type: type, id: Date.now() + Math.random() };
+        matrixData[n][d].push(item);
+        renderProcessItem(document.getElementById(`list-${k}`), item, n, d);
+        inputEl.value = '';
+        autoSave();
+    }
+
+    function renderProcessItem(container, item, n, d) {
+        const el = document.createElement('div');
+        el.className = `process-item ${item.type === 'destructive' ? 'item-destructive' : 'item-protective'}`;el.style.fontSize='0.82rem';
+        el.dataset.itemId = item.id;
+        el.innerHTML = `<span class="flex-grow">${item.text}</span><button onclick="remProc('${n}','${d}',${item.id},this)" class="delete-btn">✕</button>`;
+        container.appendChild(el);
+    }
+
+    function remProc(n, d, itemId, btn) {
+        // FIX: splice real, no null
+        const idx = matrixData[n][d].findIndex(x => x && x.id === itemId);
+        if (idx !== -1) matrixData[n][d].splice(idx, 1);
+        btn.parentElement.remove();
+        autoSave();
+    }
+
+    // ============================================================
+    // UI
+    // ============================================================
+    function switchTab(id) {
+        document.querySelectorAll('.tab-content').forEach(e => { e.classList.add('hidden'); e.classList.remove('block'); });
+        document.getElementById(id).classList.remove('hidden');
+        document.querySelectorAll('.nav-pill').forEach(b => b.classList.remove('active'));
+        document.getElementById('btn-' + id).classList.add('active');
+        if (id === 'visualizar') { renderTable(); renderCircles(); }
+        if (id === 'himupac') renderHimupacSel();
+        if (id === 'evaluacion') renderEvalDynamic();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ============================================================
+    // GRÁFICOS
+    // ============================================================
+    function renderTable() {
+        const t = document.getElementById('territory-input').value;
+        document.getElementById('display-territory').innerText = t ? `Territorio: ${t}` : "Territorio: No definido";
+        const dims = { g: 'General', p: 'Particular', i: 'Singular (Fenotipo)' };
+        let h = `<table class="synthesis-table"><thead><tr><th>Dimensión</th><th>🌱 Sus</th><th>✊ Sob</th><th>🤝 Sol</th><th>🛡️ Seg</th></tr></thead><tbody>`;
+        ['g', 'p', 'i'].forEach(d => {
+            h += `<tr><td class="row-header">${dims[d]}</td>`;
+            ['sus', 'sob', 'sol', 'seg'].forEach(n => {
+                h += `<td>`;
+                matrixData[n][d].forEach(x => {
+                    h += `<span class="tag ${x.type === 'destructive' ? 'tag-crit' : 'tag-prot'}">${x.text}</span><br>`;
+                });
+                h += `</td>`;
+            });
+            h += `</tr>`;
+        });
+        h += `</tbody></table>`;
+        document.getElementById('table-container').innerHTML = h;
+
+        // Radar
+        const ctx = document.getElementById('radarChart');
+        if (ctx) {
+            let dD = [], dP = [];
+            ['sus', 'sob', 'sol', 'seg'].forEach(n => {
+                let d = 0, p = 0;
+                ['g', 'p', 'i'].forEach(dim => matrixData[n][dim].forEach(x => { x.type === 'destructive' ? d++ : p++; }));
+                dD.push(d); dP.push(p);
+            });
+            if (myRadarChart) myRadarChart.destroy();
+            myRadarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Sus', 'Sob', 'Sol', 'Seg'],
+                    datasets: [
+                        { label: 'Destructivos', data: dD, backgroundColor: 'rgba(220,38,38,0.2)', borderColor: '#dc2626' },
+                        { label: 'Protectores', data: dP, backgroundColor: 'rgba(22,163,74,0.2)', borderColor: '#16a34a' }
+                    ]
+                },
+                options: { scales: { r: { suggestedMin: 0 } } }
+            });
+        }
+    }
+
+    // FIX: posiciones deterministas (semilla fija por índice) para reproducibilidad en PDF
+    function seededPos(seed, min, max) {
+        const x = Math.sin(seed) * 10000;
+        return min + (x - Math.floor(x)) * (max - min);
+    }
+
+    function renderCircles() {
+        const c = document.getElementById('subsumption-graphic');
+        c.innerHTML = `
+            <div class="circle-general">
+                <div class="circle-label">G</div>
+                <div id="rg" style="position:absolute;width:100%;height:100%;border-radius:50%;"></div>
+                <div class="circle-particular">
+                    <div class="circle-label">P</div>
+                    <div id="rp" style="position:absolute;width:100%;height:100%;border-radius:50%;"></div>
+                    <div class="circle-individual">
+                        <div class="circle-label">S</div>
+                        <div id="ri" style="position:absolute;width:100%;height:100%;border-radius:50%;"></div>
+                    </div>
+                </div>
+            </div>`;
+
+        const fill = (dim, containerId, minR, maxR) => {
+            let seed = 0;
+            ['sus', 'sob', 'sol', 'seg'].forEach(n => {
+                matrixData[n][dim].forEach(x => {
+                    seed++;
+                    const angle = seededPos(seed * 7, 0, Math.PI * 2);
+                    const r = seededPos(seed * 13, minR, maxR);
+                    const dot = document.createElement('div');
+                    dot.className = 'sub-tag';
+                    dot.style.backgroundColor = nodeColors[n];
+                    if (x.type === 'destructive') { dot.style.borderRadius = '2px'; }
+                    dot.style.border = '1px solid white';
+                    dot.style.left = `calc(50% + ${Math.cos(angle) * r}px)`;
+                    dot.style.top = `calc(50% + ${Math.sin(angle) * r}px)`;
+                    dot.style.transform = 'translate(-50%, -50%)';
+                    dot.innerHTML = `<span class="tooltip">${x.text}</span>`;
+                    document.getElementById(containerId).appendChild(dot);
+                });
+            });
+        };
+        fill('i', 'ri', 10, 45);
+        fill('p', 'rp', 65, 110);
+        fill('g', 'rg', 130, 175);
+    }
+
+    // ============================================================
+    // HIMUPAC
+    // ============================================================
+    // himupacSelection stores {id, type} objects now
+    function renderHimupacSel() {
+        const ldest = document.getElementById('himupac-checklist-dest');
+        const lprot = document.getElementById('himupac-checklist-prot');
+        if (!ldest || !lprot) return;
+        ldest.innerHTML = ''; lprot.innerHTML = '';
+        let hasDest = false, hasProt = false;
+
+        ['sus', 'sob', 'sol', 'seg'].forEach(n => ['g', 'p', 'i'].forEach(d => {
+            matrixData[n][d].forEach(x => {
+                const isDest = x.type === 'destructive';
+                const container = isDest ? ldest : lprot;
+                if (isDest) hasDest = true; else hasProt = true;
+                const selObj = himupacSelection.find(s => s.id === x.id);
+                const sel = !!selObj;
+                const el = document.createElement('div');
+                el.className = `selectable-item p-2 text-xs mb-1 ${sel ? 'selected' : ''}`;
+                el.style.borderLeft = isDest ? '3px solid #e11d48' : '3px solid #16a34a';
+                el.style.background = sel ? (isDest ? 'rgba(255,247,237,0.85)' : 'rgba(240,253,244,0.85)') : 'rgba(255,255,255,0.5)';
+                el.innerText = x.text;
+                el.onclick = () => {
+                    const idx = himupacSelection.findIndex(s => s.id === x.id);
+                    if (idx < 0) himupacSelection.push({id: x.id, type: x.type, text: x.text});
+                    else himupacSelection.splice(idx, 1);
+                    renderHimupacSel();
+                    autoSave();
+                };
+                container.appendChild(el);
+            });
+        }));
+        if (!hasDest) ldest.innerHTML = '<div class="text-xs text-stone-400 text-center py-3 italic">Sin procesos malsanos aún.</div>';
+        if (!hasProt) lprot.innerHTML = '<div class="text-xs text-stone-400 text-center py-3 italic">Sin procesos protectores aún.</div>';
+
+        const sc = document.getElementById('himupac-selected-list');
+        sc.innerHTML = '';
+        himupacSelection.forEach(sel => {
+            if (!sel || !sel.text) return;
+            const s = document.createElement('span');
+            const isDest = sel.type === 'destructive';
+            s.className = 'him-chip';
+            s.style.background = isDest ? 'rgba(255,241,242,0.9)' : 'rgba(240,253,244,0.9)';
+            s.style.borderColor = isDest ? 'rgba(225,29,72,0.4)' : 'rgba(22,163,74,0.4)';
+            s.style.color = isDest ? '#9f1239' : '#14532d';
+            const icon = isDest ? '🔴' : '🟢';
+            s.innerHTML = `${icon} ${sel.text.substring(0,26)}${sel.text.length>26?'…':''} <span class="close">✕</span>`;
+            s.querySelector('.close').onclick = () => {
+                himupacSelection = himupacSelection.filter(x => x.id !== sel.id);
+                renderHimupacSel();
+                autoSave();
+            };
+            sc.appendChild(s);
+        });
+    }
+
+    // ============================================================
+    // SISTEMA DE EXPORTACIÓN — ventana nueva con HTML autónomo
+    // No depende de Tailwind, @media print, overlays ni canvas.
+    // Abre una pestaña limpia con estilos inline y dispara window.print().
+    // ============================================================
+
+    // CSS base compartido para todos los PDF
+    const PDF_BASE_CSS = `
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        @page { margin: 1.5cm; size: A4; }
+        @media print { * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; } }
+        body { font-family: Georgia, 'Times New Roman', serif; color: #1c1917; background: white; font-size: 11pt; line-height: 1.6; }
+        h1, h2, h3, h4 { font-family: Georgia, serif; font-weight: bold; }
+        .page { max-width: 900px; margin: 0 auto; padding: 20px; }
+        .header { border-bottom: 4px solid #78350f; padding-bottom: 16px; margin-bottom: 24px; }
+        .header h1 { font-size: 22pt; color: #78350f; }
+        .header .sub { font-size: 10pt; color: #78716c; font-style: italic; }
+        .header .meta { font-size: 9pt; color: #57534e; margin-top: 6px; }
+        .section-title { font-size: 9pt; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: #57534e; margin-bottom: 6px; margin-top: 18px; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px; }
+        .content-box { background: #f9f9f8; border: 1px solid #e5e7eb; border-radius: 4px; padding: 12px; margin-top: 6px; min-height: 36px; font-size: 10.5pt; white-space: pre-wrap; word-break: break-word; }
+        .content-box.amber { background: #fffbeb; border-color: #fcd34d; }
+        .content-box.red { background: #fff1f2; border-color: #fca5a5; }
+        .content-box.green { background: #f0fdf4; border-color: #86efac; }
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 8px; }
+        .three-col { display: grid; grid-template-columns: 160px 1fr 1fr; gap: 12px; margin-top: 8px; }
+        .label-col { background: #f5f5f4; border: 1px solid #e5e7eb; border-radius: 4px; padding: 10px 12px; }
+        .label-col h4 { font-size: 10pt; color: #78350f; margin-bottom: 2px; }
+        .label-col p { font-size: 8.5pt; color: #78716c; }
+        .chip { display: inline-block; background: #fff7ed; border: 1px solid #f97316; color: #9a3412; border-radius: 20px; padding: 3px 10px; font-size: 9pt; margin: 3px; font-weight: bold; }
+        .chip-red { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; border-radius: 4px; }
+        .chip-green { background: #dcfce7; color: #166534; border: 1px solid #86efac; border-radius: 4px; }
+        .tag-row { margin-top: 4px; }
+        .footer { margin-top: 40px; padding-top: 12px; border-top: 1px solid #e5e7eb; text-align: center; font-size: 8pt; color: #a8a29e; }
+        .divider { border: none; border-top: 1px solid #e5e7eb; margin: 20px 0; }
+        .notice { background: #fffbeb; border-left: 4px solid #d97706; padding: 10px 14px; border-radius: 0 4px 4px 0; margin: 12px 0; font-size: 9.5pt; }
+        .notice strong { color: #92400e; }
+        table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 9.5pt; }
+        th { background: #fff7ed; padding: 8px 10px; text-align: left; border-bottom: 2px solid #ea580c; color: #9a3412; font-weight: bold; font-size: 8.5pt; text-transform: uppercase; }
+        td { padding: 8px 10px; border-bottom: 1px solid #f3f4f6; vertical-align: top; }
+        td.row-h { font-weight: bold; color: #78350f; background: #fafaf9; border-right: 1px solid #e5e7eb; white-space: nowrap; }
+        .no-break { break-inside: avoid; }
+    `;
+
+    function openPrintWindow(htmlContent) {
+        const w = window.open('', '_blank', 'width=900,height=700');
+        if (!w) { alert('Permite ventanas emergentes para generar el PDF.'); return; }
+        w.document.open();
+        w.document.write(`<!DOCTYPE html><html lang="es"><head>
+            <meta charset="UTF-8">
+            <title>Informe Epidemiología Crítica & HiMupAC</title>
+            <style>${PDF_BASE_CSS}</style>
+        </head><body>${htmlContent}
+        <script>
+            window.addEventListener('load', function() {
+                setTimeout(function() { window.print(); }, 600);
+            });
+        <\/script>
+        </body></html>`);
+        w.document.close();
+    }
+
+    // --- SÍNTESIS ---
+    function exportToPDF() {
+        const territory = document.getElementById('territory-input').value || 'No definido';
+
+        // Tabla de procesos
+        const dims = { g: 'General', p: 'Particular', i: 'Singular (Fenotipo)' };
+        const nodeLabels = { sus: '🌱 Sus', sob: '✊ Sob', sol: '🤝 Sol', seg: '🛡️ Seg' };
+        let tableRows = '';
+        ['g', 'p', 'i'].forEach(d => {
+            let cells = `<td class="row-h">${dims[d]}</td>`;
+            ['sus', 'sob', 'sol', 'seg'].forEach(n => {
+                const items = matrixData[n][d];
+                cells += `<td>${items.length ? items.map(x =>
+                    `<span class="chip ${x.type === 'destructive' ? 'chip-red' : 'chip-green'}" style="display:inline-block;margin:2px;padding:2px 7px;font-size:8.5pt;">${escHtml(x.text)}</span>`
+                ).join('') : '<span style="color:#ccc;font-style:italic;font-size:8pt;">—</span>'}</td>`;
+            });
+            tableRows += `<tr>${cells}</tr>`;
+        });
+
+        // Diagrama de subsunción como SVG puro (sin position:absolute)
+        const svgCircles = buildSubsumptionSVG();
+
+        // Radar como imagen base64
+        const radarImg = getRadarAsImage();
+
+        // Conteos para la lectura
+        let totalDest = 0, totalProt = 0;
+        ['sus','sob','sol','seg'].forEach(n => ['g','p','i'].forEach(d => {
+            matrixData[n][d].forEach(x => { x.type==='destructive' ? totalDest++ : totalProt++; });
+        }));
+        const balance = totalDest === 0 && totalProt === 0 ? 'Sin datos registrados.' :
+            totalDest > totalProt ? `Predominio de procesos DESTRUCTIVOS (${totalDest} vs ${totalProt} protectores). Metabolismo social deteriorado.` :
+            totalProt > totalDest ? `Predominio de procesos PROTECTORES (${totalProt} vs ${totalDest} destructivos). Resistencia social activa.` :
+            `Balance equilibrado (${totalDest} destructivos / ${totalProt} protectores).`;
+
+        const html = `<div class="page">
+            <div class="header">
+                <h1>Matriz de Procesos Críticos</h1>
+                <p class="sub">Herramienta de Epidemiología Crítica — Determinación Social de la Salud</p>
+                <p class="meta">Territorio: <strong>${escHtml(territory)}</strong> &nbsp;|&nbsp; Modelo Dialéctico: Basado en la obra de Jaime Breilh, 2023 &nbsp;|&nbsp; Instrumento: Páez-Mora & Cetina-Matallana (2025)</p>
+            </div>
+
+            <div class="section-title">1. Tabla de Procesos Críticos por Dominio y Dimensión</div>
+            <table>
+                <thead><tr><th>Dimensión</th><th>🌱 Sustentabilidad</th><th>✊ Soberanía</th><th>🤝 Solidaridad</th><th>🛡️ Seguridad</th></tr></thead>
+                <tbody>${tableRows}</tbody>
+            </table>
+            <p style="font-size:8pt;color:#78716c;margin-top:6px;">
+                <span style="background:#fee2e2;border:1px solid #fca5a5;padding:1px 6px;border-radius:3px;font-size:8pt;">■ Malsano/Destructivo</span> &nbsp;
+                <span style="background:#dcfce7;border:1px solid #86efac;padding:1px 6px;border-radius:3px;font-size:8pt;">■ Protector/Emancipador</span>
+            </p>
+
+            <hr class="divider">
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:8px;" class="no-break">
+                <div>
+                    <div class="section-title">2. Balance de Fuerzas (Radar)</div>
+                    ${radarImg ? `<img src="${radarImg}" style="width:100%;max-width:320px;display:block;margin:8px auto;" alt="Radar de fuerzas"/>` : '<p style="color:#aaa;font-style:italic;font-size:9pt;padding:20px;text-align:center;">Sin datos suficientes para el radar.</p>'}
+                    <div class="notice" style="margin-top:8px;">
+                        <strong>Lectura Crítica (Metabolismo Social):</strong>
+                        El radar visualiza la tensión dialéctica entre vida y muerte en el territorio.
+                        El área <strong style="color:#dc2626;">ROJA</strong> indica metabolismo destructivo;
+                        el área <strong style="color:#16a34a;">VERDE</strong> representa resistencia social.
+                        <br><br><strong>Balance actual:</strong> ${balance}
+                    </div>
+                </div>
+                <div>
+                    <div class="section-title">3. Subsunción Dialéctica (Jerarquía)</div>
+                    <div style="text-align:center;margin:8px 0;">${svgCircles}</div>
+                    <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:8px 0;font-size:8.5pt;">
+                        <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#059669;"></span> Sustentabilidad</span>
+                        <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#b91c1c;"></span> Soberanía</span>
+                        <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#d97706;"></span> Solidaridad</span>
+                        <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#0369a1;"></span> Seguridad</span>
+                        <span><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#666;"></span> Cuadrado = Destructivo</span>
+                    </div>
+                    <div class="notice">
+                        <strong>Lectura Crítica (Jerarquía de Determinación):</strong>
+                        No somos individuos aislados. El círculo <strong>General</strong> (políticas, modelo económico)
+                        envuelve y determina al círculo <strong>Particular</strong> (modos de vida grupales),
+                        que condiciona lo <strong>Singular</strong> (cuerpo, estilos de vida).
+                        Los puntos indican dónde se concentran los problemas de cada categoría.
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer">Epidemiología Crítica — Instrumento de Determinación Social &amp; HiMupAC &nbsp;|&nbsp; Páez-Mora &amp; Cetina-Matallana (2025) &nbsp;|&nbsp; Basado en Jaime Breilh</div>
+        </div>`;
+        openPrintWindow(html);
+    }
+
+    // --- PRAXIS ---
+    function generarReporte(tipo) {
+        if (tipo === 'praxis') exportPraxis();
+        else if (tipo === 'evaluacion') exportEvaluacion();
+        else exportHimupac();
+    }
+    // ============================================================
+    // EVALUACIÓN — indicadores dinámicos desde la matriz
+    // ============================================================
+    function renderEvalDynamic() {
+        const container = document.getElementById('eval-dynamic-indicators');
+        const noData = document.getElementById('eval-no-data');
+        container.innerHTML = '';
+        let total = 0;
+        ['sus','sob','sol','seg'].forEach(n => ['g','p','i'].forEach(d => { total += matrixData[n][d].filter(x=>x.type==='destructive').length; }));
+        if (total === 0) { noData.style.display = 'block'; return; }
+        noData.style.display = 'none';
+        const nodeLabels = { sus:'Sustentabilidad', sob:'Soberanía', sol:'Solidaridad', seg:'Seguridad' };
+        const dimLabels = { g:'General', p:'Particular', i:'Singular' };
+        let idx = 0;
+        ['sus','sob','sol','seg'].forEach(n => {
+            ['g','p','i'].forEach(d => {
+                matrixData[n][d].filter(x=>x.type==='destructive').forEach(x => {
+                    idx++;
+                    const div = document.createElement('div');
+                    div.className = 'glass-sm p-3';
+                    div.style.background = 'rgba(255,255,255,0.65)';
+                    div.innerHTML = `
+                        <div class="flex items-start gap-2 mb-1.5">
+                            <span class="text-xs font-bold px-2 py-0.5 rounded-full flex-shrink-0" style="background:rgba(254,226,226,0.8);color:#991b1b;">I.${idx}</span>
+                            <span class="text-xs font-semibold text-stone-600">Proceso: <em>${escHtml(x.text)}</em> <span class="text-stone-400">(${nodeLabels[n]} — ${dimLabels[d]})</span></span>
+                        </div>
+                        <div>
+                            <label class="text-xs text-stone-400 uppercase tracking-wide block mb-1">Indicador de seguimiento</label>
+                            <input type="text" id="eval-ind-${x.id}" class="glass-input px-3 py-1.5 text-xs" placeholder="Ej: % de la comunidad que identifica este proceso como determinante de su salud..." value="" oninput="autoSave()">
+                        </div>`;
+                    container.appendChild(div);
+                    // restore if saved
+                    const saved = (evalIndicators || {})[x.id];
+                    if (saved) div.querySelector(`#eval-ind-${x.id}`).value = saved;
+                });
+            });
+        });
+    }
+
+    let evalIndicators = {};
+
+    function exportEvaluacion() {
+        // collect dynamic indicators
+        let indicatorsHtml = '';
+        let idx = 0;
+        const nodeLabels = { sus:'Sustentabilidad', sob:'Soberanía', sol:'Solidaridad', seg:'Seguridad' };
+        const dimLabels = { g:'General', p:'Particular', i:'Singular' };
+        ['sus','sob','sol','seg'].forEach(n => ['g','p','i'].forEach(d => {
+            matrixData[n][d].filter(x=>x.type==='destructive').forEach(x => {
+                idx++;
+                const el = document.getElementById(`eval-ind-${x.id}`);
+                const val = el ? el.value.trim() : '(Sin completar)';
+                indicatorsHtml += `<tr><td class="row-h">I.${idx}</td><td style="font-style:italic;color:#57534e;">${escHtml(x.text)}<br><span style="font-size:7.5pt;color:#a8a29e;">${nodeLabels[n]} — ${dimLabels[d]}</span></td><td>${escHtml(val||'(Sin definir)')}</td></tr>`;
+            });
+        }));
+        const gv = id => { const el = document.getElementById(id); return el ? (el.value.trim()||'(Sin completar)') : '(Sin completar)'; };
+        const territory = document.getElementById('territory-input').value || '---';
+        const autor = gv('him-autor'); const fecha = gv('him-fecha');
+
+        openPrintWindow(`<div class="page">
+            <div class="header">
+                <h1>Informe de Evaluación HiMupAC</h1>
+                <p class="sub">Evaluación del proceso de Historias Musicales para el Aprendizaje Colectivo</p>
+                <p class="meta">Territorio: <strong>${escHtml(territory)}</strong> &nbsp;|&nbsp; Facilitador/a: <strong>${escHtml(autor)}</strong> &nbsp;|&nbsp; Fecha: <strong>${escHtml(fecha)}</strong></p>
+                <p class="meta">Páez-Mora &amp; Cetina-Matallana (2025). <em>Global Health Promotion</em>. DOI: 10.1177/17579759251334393</p>
+            </div>
+            <div class="notice"><strong>Sobre la evaluación:</strong> La evaluación se adapta al contexto de cada territorio. Se mide el efecto de la estrategia sobre la percepción de cambio social. El alcance puede ser preventivo o de promoción de la salud, y las piezas pueden ser voz del colectivo en la lucha por justicia social.</div>
+            ${indicatorsHtml ? `<div class="section-title">1. Indicadores por Proceso Crítico</div>
+            <table><thead><tr><th>N°</th><th>Proceso Crítico</th><th>Indicador de Seguimiento</th></tr></thead><tbody>${indicatorsHtml}</tbody></table>` : ''}
+            <div class="section-title" style="margin-top:18px;">2. Percepción Comunitaria</div>
+            <div class="content-box">${escHtml(gv('eval-percepcion'))}</div>
+            <div class="section-title" style="margin-top:14px;">3. Cambio Social Percibido</div>
+            <div class="content-box">${escHtml(gv('eval-cambio'))}</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;" class="no-break">
+                <div><div class="section-title">4. Indicadores Cuantitativos</div><div class="content-box">${escHtml(gv('eval-cuantitativo'))}</div></div>
+                <div><div class="section-title">5. Evolución de la Pieza</div><div class="content-box">${escHtml(gv('eval-evolucion'))}</div></div>
+            </div>
+            <div class="section-title" style="margin-top:14px;">6. Reflexión Crítica del Proceso</div>
+            <div class="content-box amber">${escHtml(gv('eval-reflexion'))}</div>
+            <div class="footer">Evaluación HiMupAC &nbsp;|&nbsp; Páez-Mora &amp; Cetina-Matallana (2025) &nbsp;|&nbsp; Basado en Jaime Breilh, 2023 &nbsp;|&nbsp; Diseño: Carlos D. Páez-Mora, Areandina</div>
+        </div>`);
+    }
+
+
+    function exportPraxis() {
+        const territory = document.getElementById('territory-input').value || 'No definido';
+        const gv = id => document.getElementById(id).value.trim() || '(Sin completar)';
+        const rowData = [
+            { nivel: 'GENERAL', desc: 'Nivel Estratégico', color: '#78350f', bgColor: '#fff7ed',
+              prev: gv('praxis-g-prev'), prom: gv('praxis-g-prom') },
+            { nivel: 'PARTICULAR', desc: 'Nivel Táctico', color: '#0f766e', bgColor: '#f0fdfa',
+              prev: gv('praxis-p-prev'), prom: gv('praxis-p-prom') },
+            { nivel: 'SINGULAR', desc: 'Nivel Puntual', color: '#b45309', bgColor: '#fffbeb',
+              prev: gv('praxis-i-prev'), prom: gv('praxis-i-prom') }
+        ];
+
+        const rows = rowData.map(r => `
+            <div class="no-break" style="margin-bottom:20px;border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;">
+                <div style="background:${r.bgColor};border-bottom:2px solid ${r.color};padding:10px 14px;">
+                    <strong style="color:${r.color};font-size:11pt;">${r.nivel}</strong>
+                    <span style="color:#78716c;font-size:9pt;margin-left:8px;">${r.desc}</span>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;">
+                    <div style="padding:14px;border-right:1px solid #f3f4f6;">
+                        <div style="font-size:8.5pt;font-weight:bold;color:#991b1b;text-transform:uppercase;margin-bottom:8px;background:#fee2e2;padding:4px 8px;border-radius:3px;">🛡️ Prevención Crítica — Transformación Estructural</div>
+                        <div style="font-size:10pt;white-space:pre-wrap;word-break:break-word;min-height:40px;">${escHtml(r.prev)}</div>
+                    </div>
+                    <div style="padding:14px;">
+                        <div style="font-size:8.5pt;font-weight:bold;color:#166534;text-transform:uppercase;margin-bottom:8px;background:#dcfce7;padding:4px 8px;border-radius:3px;">🌱 Promoción Emancipadora — Potenciación de la Vida</div>
+                        <div style="font-size:10pt;white-space:pre-wrap;word-break:break-word;min-height:40px;">${escHtml(r.prom)}</div>
+                    </div>
+                </div>
+            </div>`).join('');
+
+        const html = `<div class="page">
+            <div class="header">
+                <h1>Plan de Acción Crítica</h1>
+                <p class="sub">Matriz de Prevención Crítica y Promoción Emancipadora de la Salud</p>
+                <p class="meta">Territorio: <strong>${escHtml(territory)}</strong> &nbsp;|&nbsp; Herramienta de Epidemiología Crítica &nbsp;|&nbsp; Páez-Mora &amp; Cetina-Matallana (2025)</p>
+            </div>
+
+            <div class="notice">
+                <strong>Marco Conceptual:</strong> Esta matriz supera la prevención biomédica individual para proponer
+                <strong>Prevención Crítica</strong> (transformación de las condiciones estructurales que generan enfermedad)
+                y <strong>Promoción Emancipadora</strong> (potenciación de la vida y los modos de existencia saludables),
+                articuladas en los tres niveles de determinación social: General, Particular y Singular.
+            </div>
+
+            <div class="section-title" style="margin-top:20px;">Matriz de Acción por Nivel de Determinación</div>
+            <div style="margin-bottom:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:9pt;font-weight:bold;">
+                <div style="background:#fee2e2;padding:6px 10px;border-radius:4px;color:#991b1b;text-align:center;">🛡️ PREVENCIÓN CRÍTICA: Acciones de transformación estructural</div>
+                <div style="background:#dcfce7;padding:6px 10px;border-radius:4px;color:#166534;text-align:center;">🌱 PROMOCIÓN EMANCIPADORA: Potenciación de la vida</div>
+            </div>
+            ${rows}
+            <div class="footer">Epidemiología Crítica — Plan de Acción Crítica &nbsp;|&nbsp; Páez-Mora &amp; Cetina-Matallana (2025) &nbsp;|&nbsp; Basado en Jaime Breilh</div>
+        </div>`;
+        openPrintWindow(html);
+    }
+
+    // --- HIMUPAC ---
+    function exportHimupac() {
+        const gv = id => document.getElementById(id).value.trim() || '(Sin completar)';
+        const territory = document.getElementById('territory-input').value || '---';
+        const autor = gv('him-autor');
+        const fecha = gv('him-fecha');
+        const nivel = gv('him-nivel');
+
+        // Nudos críticos seleccionados
+        const selectedTexts = himupacSelection.map(id => {
+            let text = '';
+            ['sus','sob','sol','seg'].forEach(n => ['g','p','i'].forEach(d => {
+                const found = matrixData[n][d].find(x => x.id === id);
+                if (found) text = found.text;
+            }));
+            return text;
+        }).filter(Boolean);
+
+        const nudosHtml = selectedTexts.length
+            ? selectedTexts.map(t => `<li style="margin-bottom:6px;font-size:10.5pt;">${escHtml(t)}</li>`).join('')
+            : '<li style="color:#aaa;font-style:italic;">Sin procesos seleccionados.</li>';
+
+        const html = `<div class="page">
+            <div class="header">
+                <h1>Propuesta HiMupAC</h1>
+                <p class="sub">Historias Musicales para el Aprendizaje Colectivo</p>
+                <p class="meta">
+                    Facilitador/a: <strong>${escHtml(autor)}</strong> &nbsp;|&nbsp;
+                    Fecha: <strong>${escHtml(fecha)}</strong> &nbsp;|&nbsp;
+                    Territorio: <strong>${escHtml(territory)}</strong>
+                </p>
+                <p class="meta" style="margin-top:4px;">Propuesta metodológica basada en Educación Popular, Interculturalidad y Determinación Social &nbsp;|&nbsp; Páez-Mora &amp; Cetina-Matallana (2025)</p>
+            </div>
+
+            <div class="notice">
+                <strong>¿Qué es HiMupAC?</strong> El método de Historias Musicales para el Aprendizaje Colectivo (HiMupAC)
+                usa narrativas sonoras situadas territorialmente para detonar procesos de <em>sentipensar</em> comunitario.
+                No impone saber técnico: dialoga con saberes locales para transformar la comprensión
+                de los determinantes sociales de la salud en acción colectiva.
+            </div>
+
+            <div class="section-title" style="margin-top:18px;">Paso 1 — Diagnóstico: Nudos Críticos Seleccionados</div>
+            <div style="background:#fff1f2;border:1px solid #fca5a5;border-radius:4px;padding:12px 16px;margin-top:6px;">
+                <p style="font-size:9pt;color:#991b1b;font-weight:bold;margin-bottom:8px;">
+                    Procesos malsanos que la historia debe abordar y transformar:
+                </p>
+                <ul style="padding-left:20px;">${nudosHtml}</ul>
+            </div>
+
+            <div class="section-title" style="margin-top:18px;">Paso 2 — Fundamentación Intercultural</div>
+            <p style="font-size:9pt;color:#57534e;margin-bottom:4px;">
+                Reconocimiento del Otro. El método no impone saber técnico, sino que dialoga con los saberes locales.
+            </p>
+            <div class="content-box amber">${escHtml(gv('him-fundamentos'))}</div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;" class="no-break">
+                <div>
+                    <div class="section-title">Paso 3a — Perfil del Personaje</div>
+                    <p style="font-size:9pt;color:#57534e;margin-bottom:4px;">El personaje debe generar identificación inmediata ("Ese soy yo") para facilitar el <em>sentipensar</em>.</p>
+                    <div class="content-box">${escHtml(gv('him-personaje-perfil'))}</div>
+                </div>
+                <div>
+                    <div class="section-title">Paso 3b — Vivencia del Problema</div>
+                    <p style="font-size:9pt;color:#57534e;margin-bottom:4px;">¿Cómo vive, siente y sufre este personaje el proceso malsano seleccionado?</p>
+                    <div class="content-box">${escHtml(gv('him-personaje-vivencia'))}</div>
+                </div>
+            </div>
+
+            <div class="no-break" style="margin-top:16px;">
+                <div class="section-title">Paso 4 — Estrategia Narrativa</div>
+                <p style="font-size:9pt;color:#57534e;margin-bottom:4px;">
+                    Nivel de transformación articulada: <strong style="color:#b45309;">${escHtml(nivel)}</strong>
+                </p>
+                <p style="font-size:9pt;color:#57534e;margin-bottom:4px;">Trama y desenlace. ¿A dónde se quiere llegar? ¿Cómo se organiza el personaje o la comunidad para transformar la realidad? (Evitar soluciones mágicas).</p>
+                <div class="content-box">${escHtml(gv('him-trama'))}</div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;" class="no-break">
+                <div>
+                    <div class="section-title">Paso 5a — Estética Sonora y Ritmo</div>
+                    <p style="font-size:9pt;color:#57534e;margin-bottom:4px;">¿Qué ritmo musical y sonidos ambientales son propios del territorio?</p>
+                    <div class="content-box">${escHtml(gv('him-ritmo'))}</div>
+                </div>
+                <div>
+                    <div class="section-title">Paso 5b — Saberes Populares</div>
+                    <p style="font-size:9pt;color:#57534e;margin-bottom:4px;">Dichos, mensajes o conocimiento popular adaptado culturalmente.</p>
+                    <div class="content-box">${escHtml(gv('him-dichos'))}</div>
+                </div>
+            </div>
+
+            <div class="no-break" style="margin-top:16px;">
+                <div class="section-title">Paso 6 — Puesta en Escena (Co-construcción)</div>
+                <p style="font-size:9pt;color:#57534e;margin-bottom:4px;">Estrategia de uso. ¿Cómo se socializará para detonar el aprendizaje colectivo? (Educación Popular).</p>
+                <div class="content-box amber">${escHtml(gv('him-puesta'))}</div>
+            </div>
+
+            <div class="footer">Método HiMupAC — Historias Musicales para el Aprendizaje Colectivo &nbsp;|&nbsp; Páez-Mora &amp; Cetina-Matallana (2025) &nbsp;|&nbsp; Basado en Epidemiología Crítica de Jaime Breilh</div>
+        </div>`;
+        openPrintWindow(html);
+    }
+
+    // Helpers
+    function escHtml(s) {
+        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function getRadarAsImage() {
+        try {
+            const cv = document.getElementById('radarChart');
+            if (!cv) return null;
+            return cv.toDataURL('image/png');
+        } catch(e) { return null; }
+    }
+
+    // Construye el diagrama de subsunción como SVG puro para impresión perfecta
+    function buildSubsumptionSVG() {
+        const W = 280, H = 280, cx = 140, cy = 140;
+        const rings = [
+            { r: 130, label: 'G', stroke: '#d97706', fill: 'rgba(255,251,235,0.6)', dim: 'g', minR: 90, maxR: 125 },
+            { r: 85,  label: 'P', stroke: '#0d9488', fill: 'rgba(240,253,250,0.6)', dim: 'p', minR: 50, maxR: 80 },
+            { r: 40,  label: 'S', stroke: '#f59e0b', fill: 'rgba(255,255,255,0.9)', dim: 'i', minR: 8,  maxR: 35 }
+        ];
+
+        let svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`;
+        svgContent += `<defs><style>.sl{font-family:Georgia,serif;font-weight:bold;font-size:8px;fill:#78350f;}</style></defs>`;
+
+        // Circles
+        rings.forEach(ring => {
+            svgContent += `<circle cx="${cx}" cy="${cy}" r="${ring.r}" fill="${ring.fill}" stroke="${ring.stroke}" stroke-width="1.5" stroke-dasharray="${ring.r < 50 ? 'none' : '4,3'}"/>`;
+            svgContent += `<text x="${cx}" y="${cy - ring.r + 10}" text-anchor="middle" class="sl">${ring.label}</text>`;
+        });
+
+        // Dots
+        let seed = 0;
+        rings.forEach(ring => {
+            ['sus','sob','sol','seg'].forEach(n => {
+                matrixData[n][ring.dim].forEach(x => {
+                    seed++;
+                    const ang = seededPos(seed * 7, 0, Math.PI * 2);
+                    const r = seededPos(seed * 13, ring.minR, ring.maxR);
+                    const px = cx + Math.cos(ang) * r;
+                    const py = cy + Math.sin(ang) * r;
+                    const col = nodeColors[n];
+                    if (x.type === 'destructive') {
+                        svgContent += `<rect x="${px-4}" y="${py-4}" width="8" height="8" fill="${col}" stroke="white" stroke-width="1" rx="1"/>`;
+                    } else {
+                        svgContent += `<circle cx="${px}" cy="${py}" r="4" fill="${col}" stroke="white" stroke-width="1"/>`;
+                    }
+                });
+            });
+        });
+
+        svgContent += `</svg>`;
+        return svgContent;
+    }
+
+    // ============================================================
+    // PERSISTENCIA con localStorage
+    // ============================================================
+    let saveTimer = null;
+    function autoSave() {
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(() => {
+            try {
+                const state = {
+                    matrixData,
+                    himupacSelection,
+                    territory: document.getElementById('territory-input').value,
+                    praxis: {
+                        'g-prev': document.getElementById('praxis-g-prev').value,
+                        'g-prom': document.getElementById('praxis-g-prom').value,
+                        'p-prev': document.getElementById('praxis-p-prev').value,
+                        'p-prom': document.getElementById('praxis-p-prom').value,
+                        'i-prev': document.getElementById('praxis-i-prev').value,
+                        'i-prom': document.getElementById('praxis-i-prom').value,
+                    },
+                    him: {
+                        autor: document.getElementById('him-autor').value,
+                        fecha: document.getElementById('him-fecha').value,
+                        fundamentos: document.getElementById('him-fundamentos').value,
+                        perfil: document.getElementById('him-personaje-perfil').value,
+                        vivencia: document.getElementById('him-personaje-vivencia').value,
+                        nivel: document.getElementById('him-nivel').value,
+                        trama: document.getElementById('him-trama').value,
+                        ritmo: document.getElementById('him-ritmo').value,
+                        dichos: document.getElementById('him-dichos').value,
+                        puesta: document.getElementById('him-puesta').value,
+                        pubcanales: document.getElementById('him-publicacion-canales') ? document.getElementById('him-publicacion-canales').value : '',
+                        pubestrategia: document.getElementById('him-publicacion-estrategia') ? document.getElementById('him-publicacion-estrategia').value : '',
+                    },
+                    eval: {
+                        percepcion: document.getElementById('eval-percepcion') ? document.getElementById('eval-percepcion').value : '',
+                        cambio: document.getElementById('eval-cambio') ? document.getElementById('eval-cambio').value : '',
+                        cuantitativo: document.getElementById('eval-cuantitativo') ? document.getElementById('eval-cuantitativo').value : '',
+                        evolucion: document.getElementById('eval-evolucion') ? document.getElementById('eval-evolucion').value : '',
+                        reflexion: document.getElementById('eval-reflexion') ? document.getElementById('eval-reflexion').value : '',
+                    }
+                };
+                localStorage.setItem('epi-critica-state', JSON.stringify(state));
+                const ind = document.getElementById('save-indicator');
+                ind.classList.add('show');
+                setTimeout(() => ind.classList.remove('show'), 1800);
+            } catch (e) { console.warn('No se pudo guardar en localStorage', e); }
+        }, 800);
+    }
+
+    function restoreState() {
+        try {
+            const raw = localStorage.getItem('epi-critica-state');
+            if (!raw) return;
+            const state = JSON.parse(raw);
+            matrixData = state.matrixData || matrixData;
+            himupacSelection = state.himupacSelection || [];
+            if (state.territory) document.getElementById('territory-input').value = state.territory;
+            // Restaurar paneles con procesos
+            Object.keys(matrixData).forEach(n => {
+                ['g', 'p', 'i'].forEach(d => {
+                    const listEl = document.getElementById(`list-${n}-${d}`);
+                    if (listEl) {
+                        matrixData[n][d].forEach(item => renderProcessItem(listEl, item, n, d));
+                    }
+                });
+            });
+            // Praxis
+            if (state.praxis) {
+                Object.keys(state.praxis).forEach(k => {
+                    const el = document.getElementById(`praxis-${k}`);
+                    if (el) el.value = state.praxis[k];
+                });
+            }
+            // HiMupAC
+            if (state.him) {
+                const map = {
+                    autor: 'him-autor', fecha: 'him-fecha', fundamentos: 'him-fundamentos',
+                    perfil: 'him-personaje-perfil', vivencia: 'him-personaje-vivencia',
+                    nivel: 'him-nivel', trama: 'him-trama', ritmo: 'him-ritmo',
+                    dichos: 'him-dichos', puesta: 'him-puesta',
+                    pubcanales: 'him-publicacion-canales', pubestrategia: 'him-publicacion-estrategia'
+                };
+                Object.keys(map).forEach(k => {
+                    const el = document.getElementById(map[k]);
+                    if (el && state.him[k]) el.value = state.him[k];
+                });
+            }
+            // Evaluación
+            if (state.eval) {
+                const evalMap = {
+                    percepcion: 'eval-percepcion', cambio: 'eval-cambio',
+                    cuantitativo: 'eval-cuantitativo', evolucion: 'eval-evolucion', reflexion: 'eval-reflexion'
+                };
+                Object.keys(evalMap).forEach(k => {
+                    const el = document.getElementById(evalMap[k]);
+                    if (el && state.eval[k]) el.value = state.eval[k];
+                });
+            }
+        } catch (e) { console.warn('No se pudo restaurar estado:', e); }
+    }
+
+    function clearAllData() {
+        if (!confirm('¿Limpiar toda la sesión guardada? Esta acción no se puede deshacer.')) return;
+        localStorage.removeItem('epi-critica-state');
+        matrixData = { sus: { g: [], p: [], i: [] }, sob: { g: [], p: [], i: [] }, sol: { g: [], p: [], i: [] }, seg: { g: [], p: [], i: [] } };
+        himupacSelection = [];
+        location.reload();
+    }
+
+    // ============================================================
+    // INICIALIZACIÓN
+    // ============================================================
+    document.addEventListener('DOMContentLoaded', () => {
+        buildMatrixPanels();   // FIX 1: construir DOM sin document.write
+        restoreState();        // Persistencia
+    });
+    </script>
+</body>
+</html>
